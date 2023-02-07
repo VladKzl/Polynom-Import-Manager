@@ -1,0 +1,1009 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Ascon.Polynom.Login</name>
+    </assembly>
+    <members>
+        <member name="M:Ascon.Polynom.Common.AsmResolver.AsmResolver.OnResolveAssembly(System.Object,System.ResolveEventArgs)">
+            <summary>
+            Вызывается при загрузке сборки.
+            </summary>
+            <param name="sender">Объект, посылающий событие.</param>
+            <param name="args">Аргументы события.</param>
+            <returns></returns>
+        </member>
+        <member name="T:Ascon.Polynom.Login.Dialogs.LoginWindow">
+            <summary>
+            Представляет окно входа.
+            </summary>
+            <summary>
+            LoginWindow
+            </summary>
+        </member>
+        <member name="M:Ascon.Polynom.Login.Dialogs.LoginWindow.#ctor(Ascon.Polynom.Login.LoginRegistryDto,Ascon.Polynom.Api.ClientType,Ascon.Polynom.Api.SessionOptions,System.Boolean)">
+            <summary>
+            Инициализирует экземпляр класса <see cref="T:Ascon.Polynom.Login.Dialogs.LoginWindow"/>.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Dialogs.LoginWindow.Session">
+            <summary>
+            Возвращает открытый экземпляр сессии.
+            </summary>
+            <value>
+            Экземпляр сессии.
+            </value>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Dialogs.LoginWindow.ConnectionInfo">
+            <summary>
+            Возвращает информацию о подключении к базе данных.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Dialogs.LoginWindow.AuthorizationInfo">
+            <summary>
+            Возвращает информацию о подключении к ПОЛИНОМ:MDM.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Dialogs.LoginWindow.Password">
+            <summary>
+            Возвращает пароль.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Dialogs.LoginWindow.RememberMe">
+            <summary>
+            Возвращает и устанавливает признак необходимости сохранить выбор.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Dialogs.LoginWindow.SessionDefinition">
+            <summary>
+            Возвращает объявления сессии.
+            </summary>
+            <value>
+            Экземпляр класса объявления сессии.
+            </value>
+        </member>
+        <member name="M:Ascon.Polynom.Login.Dialogs.LoginWindow.OnInitComplete(System.Object,System.EventArgs)">
+            <summary>
+            Обработчик нажатия на кнопку Подключится.
+            </summary>
+            <param name="sender">Объект пославший событие.</param>
+            <param name="e">Экземпляр класса данных события<see cref="T:System.Windows.RoutedEventArgs"/>.</param>
+        </member>
+        <member name="M:Ascon.Polynom.Login.Dialogs.LoginWindow.OnLoginClick(System.Object,Ascon.Polynom.Login.ViewModels.LoginCompleteEventArgs)">
+            <summary>
+            Обработчик нажатия на кнопку Подключится.
+            </summary>
+            <param name="sender">Объект пославший событие.</param>
+            <param name="e">Экземпляр класса данных события<see cref="T:System.Windows.RoutedEventArgs"/>.</param>
+        </member>
+        <member name="M:Ascon.Polynom.Login.Dialogs.LoginWindow.OnCancelClick(System.Object,System.EventArgs)">
+            <summary>
+            Обработчик нажатия на кнопку Отменить.
+            </summary>
+            <param name="sender">Объект пославший событие.</param>
+            <param name="e">Экземпляр класса данных события<see cref="T:System.EventArgs"/>.</param>
+        </member>
+        <member name="M:Ascon.Polynom.Login.Dialogs.LoginWindow.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:Ascon.Polynom.Login.Exceptions.LoginFailureException">
+            <summary>
+            Представляет класс исключительной ситуации входа.
+            </summary>
+            <seealso cref="T:System.Exception" />
+        </member>
+        <member name="M:Ascon.Polynom.Login.Exceptions.LoginFailureException.#ctor(System.String)">
+            <summary>
+            Инициализирует экземпляр класса <see cref="T:Ascon.Polynom.Login.Exceptions.LoginFailureException"/>.
+            </summary>
+            <param name="message">Сообщение об ошибке.</param>
+        </member>
+        <member name="M:Ascon.Polynom.Login.Exceptions.LoginFailureException.#ctor(System.String,System.Exception)">
+            <summary>
+            Инициализирует экземпляр класса <see cref="T:Ascon.Polynom.Login.Exceptions.LoginFailureException"/>.
+            </summary>
+            <param name="message">Сообщение об ошибке.</param>
+            <param name="ex">Внутреннее исключение.</param>
+        </member>
+        <member name="T:Ascon.Polynom.Login.IAuthorizationInfo">
+            <summary>
+            Представляет структуру данных полученных при авторизации пользователя.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.IAuthorizationInfo.Storage">
+            <summary>
+            Возвращает имя хранилища.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.IAuthorizationInfo.Address">
+            <summary>
+            Возвращает адрес сервера ПОЛИНОМ:MDM.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.IAuthorizationInfo.Port">
+            <summary>
+            Возвращает сервера ПОЛИНОМ:MDM.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.IAuthorizationInfo.IntegratedSecurity">
+            <summary>
+            Возвращает признак системной авторизации.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.IAuthorizationInfo.UserName">
+            <summary>
+            Возвращает имя пользователя.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.IAuthorizationInfo.Password">
+            <summary>
+            Возвращает имя пользователя.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.IAuthorizationInfo.RoleId">
+            <summary>
+            Возвращает идентификатор роли.
+            </summary>
+        </member>
+        <member name="T:Ascon.Polynom.Login.LoginManager">
+            <summary>
+            Представляет класс управление входа в систему.
+            </summary>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginManager.#cctor">
+            <summary>
+            Статический конструктор фабрики.
+            </summary>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginManager.RequestAuthorizationInfo(System.Guid,System.String,System.Uri,System.Boolean,System.Boolean,Ascon.Polynom.Api.ISession@,Ascon.Polynom.Api.ConnectionInfo@,Ascon.Polynom.Login.IAuthorizationInfo@)">
+            <summary>
+            Пробует открыть сессию открывая диалоговое окно выбора параметров.
+            </summary>
+            <param name="clientId"> Идентификатор клиента. </param>
+            <param name="title"> Заголовок. </param>
+            <param name="iconUri">Uri на иконку.</param>
+            <param name="restoreSession"></param>
+            <param name="info">Возвращаемый данные необходимые для авторизации в ПОЛИНОМ:MDM.</param>
+            <param name="selectRole"></param>
+            <returns>True если сессия открыта, иначе false.</returns>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginManager.TryOpenSession(System.Guid,Ascon.Polynom.Api.ISession@)">
+            <summary>
+            Пробует открыть сессию открывая диалоговое окно выбора параметров.
+            </summary>
+            <param name="clientId"> Идентификатор клиента. </param>
+            <param name="session">Возвращаемый экземпляр открытой сессии.</param>
+            <returns>True если сессия открыта, иначе false.</returns>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginManager.TryOpenSession(System.Guid,System.String,System.Uri,Ascon.Polynom.Api.ISession@)">
+            <summary>
+            Пробует открыть сессию открывая диалоговое окно выбора параметров.
+            </summary>
+            <param name="clientId"> Идентификатор клиента. </param>
+            <param name="title"> Заголовок. </param>
+            <param name="iconUri">Uri на иконку.</param>
+            <param name="session">Возвращаемый экземпляр открытой сессии.</param>
+            <returns>True если сессия открыта, иначе false.</returns>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginManager.TryOpenSession(System.Guid,System.String,System.Uri,Ascon.Polynom.Api.SessionOptions,Ascon.Polynom.Api.ClientType,Ascon.Polynom.Api.ISession@)">
+            <summary>
+            Пробует открыть сессию открывая диалоговое окно выбора параметров.
+            </summary>
+            <param name="clientId"> Идентификатор клиента. </param>
+            <param name="title"> Заголовок. </param>
+            <param name="iconUri">Uri на иконку.</param>
+            <param name="option"> Дополнительные опции открытия сессии.</param>
+            <param name="clientType">Тип клиента.</param>
+            <param name="session">Возвращаемый экземпляр открытой сессии.</param>
+            <returns>True если сессия открыта, иначе false.</returns>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginManager.TryRestoreSession(System.Guid,Ascon.Polynom.Api.ISession@)">
+            <summary>
+            Пробует восстановить сессию открывая диалоговое окно выбора параметров.
+            </summary>
+            <param name="clientId"> Идентификатор клиента. </param>
+            <param name="session">Возвращаемый экземпляр открытой сессии.</param>
+            <returns>True если сессия открыта, иначе false.</returns>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginManager.TryRestoreSession(System.Guid,System.String,System.Uri,Ascon.Polynom.Api.SessionOptions,Ascon.Polynom.Api.ClientType,Ascon.Polynom.Api.ISession@)">
+            <summary>
+            Пробует восстановить сессию открывая диалоговое окно выбора параметров.
+            </summary>
+            <param name="clientId"> Идентификатор клиента. </param>
+            <param name="title"> Заголовок. </param>
+            <param name="iconUri">Uri на иконку.</param>
+            <param name="option"> Дополнительные опции открытия сессии.</param>
+            <param name="clientType">Тип клиента.</param>
+            <param name="session">Возвращаемый экземпляр открытой сессии.</param>
+            <returns>True если сессия открыта, иначе false.</returns>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginManager.TryOpenSession(System.Guid,Ascon.Polynom.Api.ISession@,Ascon.Polynom.Api.ConnectionInfo@)">
+            <summary>
+            Пробует открыть сессию открывая диалоговое окно выбора параметров.
+            </summary>
+            <param name="clientId"> Идентификатор клиента. </param>
+            <param name="session">Возвращаемый экземпляр открытой сессии.</param>
+            <param name="info">Возвращает информацию о подключении. </param>
+            <returns>True если сессия открыта, иначе false.</returns>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginManager.TryOpenSession(System.Guid,Ascon.Polynom.Api.SessionOptions,Ascon.Polynom.Api.ClientType,Ascon.Polynom.Api.ISession@,Ascon.Polynom.Api.ConnectionInfo@)">
+            <summary>
+            Пробует открыть сессию открывая диалоговое окно выбора параметров.
+            </summary>
+            <param name="clientId"> Идентификатор клиента. </param>
+            <param name="option"> Дополнительные опции открытия сессии.</param>
+            <param name="clientType">Тип клиента.</param>
+            <param name="session">Возвращаемый экземпляр открытой сессии.</param>
+            <param name="info">Возвращает информацию о подключении.</param>
+            <returns>True если сессия открыта, иначе false.</returns>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginManager.TryOpenSession(System.Guid,System.String,System.Uri,Ascon.Polynom.Api.SessionOptions,Ascon.Polynom.Api.ClientType,Ascon.Polynom.Api.ISession@,Ascon.Polynom.Api.ConnectionInfo@)">
+            <summary>
+            Пробует открыть сессию открывая диалоговое окно выбора параметров.
+            </summary>
+            <param name="clientId"> Идентификатор клиента. </param>
+            <param name="title"> Заголовок. </param>
+            <param name="iconUri">Uri на иконку.</param>
+            <param name="option"> Дополнительные опции открытия сессии.</param>
+            <param name="clientType">Тип клиента.</param>
+            <param name="session">Возвращаемый экземпляр открытой сессии.</param>
+            <param name="info">Возвращает информацию о подключении.</param>
+            <returns>True если сессия открыта, иначе false.</returns>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginManager.TryRestoreSession(System.Guid,Ascon.Polynom.Api.ISession@,Ascon.Polynom.Api.ConnectionInfo@)">
+            <summary>
+            Пробует восстановить сессию открывая диалоговое окно выбора параметров.
+            </summary>
+            <param name="clientId"> Идентификатор клиента. </param>
+            <param name="session">Возвращаемый экземпляр открытой сессии.</param>
+            <param name="info">Возвращает информацию о подключении.</param>
+            <returns>True если сессия открыта, иначе false.</returns>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginManager.TryRestoreSession(System.Guid,System.String,System.Uri,Ascon.Polynom.Api.SessionOptions,Ascon.Polynom.Api.ClientType,Ascon.Polynom.Api.ISession@,Ascon.Polynom.Api.ConnectionInfo@)">
+            <summary>
+            Пробует восстановить сессию открывая диалоговое окно выбора параметров.
+            </summary>
+            <param name="clientId"> Идентификатор клиента. </param>
+            <param name="title"> Заголовок. </param>
+            <param name="iconUri">Uri на иконку.</param>
+            <param name="option"> Дополнительные опции открытия сессии.</param>
+            <param name="clientType">Тип клиента.</param>
+            <param name="session">Возвращаемый экземпляр открытой сессии.</param>
+            <param name="info">Возвращает информацию о подключении.</param>
+            <returns>True если сессия открыта, иначе false.</returns>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginManager.TryOpenSessionWithRole(System.Guid,Ascon.Polynom.Api.ISession@)">
+            <summary>
+            Пробует открыть сессию открывая диалоговое окно выбора параметров с возможностью указать роль.
+            </summary>
+            <param name="clientId"> Идентификатор клиента. </param>
+            <param name="session">Возвращаемый экземпляр открытой сессии.</param>
+            <returns>True если сессия открыта, иначе false.</returns>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginManager.TryOpenSessionWithRole(System.Guid,System.String,System.Uri,Ascon.Polynom.Api.ISession@)">
+            <summary>
+            Пробует открыть сессию открывая диалоговое окно выбора параметров с возможностью указать роль.
+            </summary>
+            <param name="clientId"> Идентификатор клиента. </param>
+            <param name="title"> Заголовок. </param>
+            <param name="iconUri"> Uri на иконку.</param>
+            <param name="session"> Возвращаемый экземпляр открытой сессии. </param>
+            <returns> True если сессия открыта, иначе false. </returns>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginManager.TryOpenSessionWithRole(System.Guid,Ascon.Polynom.Api.SessionOptions,Ascon.Polynom.Api.ClientType,Ascon.Polynom.Api.ISession@)">
+            <summary>
+            Пробует открыть сессию открывая диалоговое окно выбора параметров с возможностью указать роль.
+            </summary>
+            <param name="clientId"> Идентификатор клиента. </param>
+            <param name="option">Дополнительные опции открытия сессии.</param>
+            <param name="clientType">Тип клиента.</param>
+            <param name="session">Возвращаемый экземпляр открытой сессии.</param>
+            <returns>True если сессия открыта, иначе false.</returns>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginManager.TryOpenSessionWithRole(System.Guid,System.String,System.Uri,Ascon.Polynom.Api.SessionOptions,Ascon.Polynom.Api.ClientType,Ascon.Polynom.Api.ISession@)">
+            <summary>
+            Пробует открыть сессию открывая диалоговое окно выбора параметров с возможностью указать роль.
+            </summary>
+            <param name="clientId"> Идентификатор клиента. </param>
+            <param name="title"> Заголовок. </param>
+            <param name="iconUri">Uri на иконку.</param>
+            <param name="option">Дополнительные опции открытия сессии.</param>
+            <param name="clientType">Тип клиента.</param>
+            <param name="session">Возвращаемый экземпляр открытой сессии.</param>
+            <returns>True если сессия открыта, иначе false.</returns>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginManager.TryRestoreSessionWithRole(System.Guid,Ascon.Polynom.Api.ISession@)">
+            <summary>
+            Пробует восстановить сессию открывая диалоговое окно выбора параметров с возможностью указать роль.
+            </summary>
+            <param name="clientId"> Идентификатор клиента. </param>
+            <param name="session">Возвращаемый экземпляр открытой сессии.</param>
+            <returns>True если сессия открыта, иначе false.</returns>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginManager.TryRestoreSessionWithRole(System.Guid,System.String,System.Uri,Ascon.Polynom.Api.SessionOptions,Ascon.Polynom.Api.ClientType,Ascon.Polynom.Api.ISession@)">
+            <summary>
+            Пробует восстановить сессию открывая диалоговое окно выбора параметров с возможностью указать роль.
+            </summary>
+            <param name="clientId"> Идентификатор клиента. </param>
+            <param name="title"> Заголовок. </param>
+            <param name="iconUri">Uri на иконку.</param>
+            <param name="option">Дополнительные опции открытия сессии.</param>
+            <param name="clientType">Тип клиента.</param>
+            <param name="session">Возвращаемый экземпляр открытой сессии.</param>
+            <returns>True если сессия открыта, иначе false.</returns>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginManager.TryOpenSessionWithRole(System.Guid,Ascon.Polynom.Api.ISession@,Ascon.Polynom.Api.ConnectionInfo@)">
+            <summary>
+            Пробует открыть сессию открывая диалоговое окно выбора параметров с возможностью указать роль.
+            </summary>
+            <param name="clientId"> Идентификатор клиента. </param>
+            <param name="session">Возвращаемый экземпляр открытой сессии.</param>
+            <param name="info">Возвращает информацию о подключении. </param>
+            <returns>True если сессия открыта, иначе false.</returns>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginManager.TryOpenSessionWithRole(System.Guid,Ascon.Polynom.Api.SessionOptions,Ascon.Polynom.Api.ClientType,Ascon.Polynom.Api.ISession@,Ascon.Polynom.Api.ConnectionInfo@)">
+            <summary>
+            Пробует открыть сессию открывая диалоговое окно выбора параметров с возможностью указать роль.
+            </summary>
+            <param name="clientId"> Идентификатор клиента. </param>
+            <param name="option">Дополнительные опции открытия сессии.</param>
+            <param name="clientType">Тип клиента.</param>
+            <param name="session">Возвращаемый экземпляр открытой сессии.</param>
+            <param name="info">Возвращает информацию о подключении. </param>
+            <returns>True если сессия открыта, иначе false.</returns>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginManager.TryOpenSessionWithRole(System.Guid,System.String,System.Uri,Ascon.Polynom.Api.SessionOptions,Ascon.Polynom.Api.ClientType,Ascon.Polynom.Api.ISession@,Ascon.Polynom.Api.ConnectionInfo@)">
+            <summary>
+            Пробует открыть сессию открывая диалоговое окно выбора параметров с возможностью указать роль.
+            </summary>
+            <param name="clientId"> Идентификатор клиента. </param>
+            <param name="title"> Заголовок. </param>
+            <param name="iconUri">Uri на иконку.</param>
+            <param name="option">Дополнительные опции открытия сессии.</param>
+            <param name="clientType">Тип клиента.</param>
+            <param name="session">Возвращаемый экземпляр открытой сессии.</param>
+            <param name="info">Возвращает информацию о подключении. </param>
+            <returns>True если сессия открыта, иначе false.</returns>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginManager.TryRestoreSessionWithRole(System.Guid,Ascon.Polynom.Api.ISession@,Ascon.Polynom.Api.ConnectionInfo@)">
+            <summary>
+            Пробует восстановить сессию открывая диалоговое окно выбора параметров с возможностью указать роль.
+            </summary>
+            <param name="clientId"> Идентификатор клиента. </param>
+            <param name="session">Возвращаемый экземпляр открытой сессии.</param>
+            <param name="info">Возвращает информацию о подключении. </param>
+            <returns>True если сессия открыта, иначе false.</returns>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginManager.TryRestoreSessionWithRole(System.Guid,System.String,System.Uri,Ascon.Polynom.Api.SessionOptions,Ascon.Polynom.Api.ClientType,Ascon.Polynom.Api.ISession@,Ascon.Polynom.Api.ConnectionInfo@)">
+            <summary>
+            Пробует восстановить сессию открывая диалоговое окно выбора параметров с возможностью указать роль.
+            </summary>
+            <param name="clientId"> Идентификатор клиента. </param>
+            <param name="title"> Заголовок. </param>
+            <param name="iconUri">Uri на иконку.</param>
+            <param name="option">Дополнительные опции открытия сессии.</param>
+            <param name="clientType">Тип клиента.</param>
+            <param name="session">Возвращаемый экземпляр открытой сессии.</param>
+            <param name="info">Возвращает информацию о подключении. </param>
+            <returns>True если сессия открыта, иначе false.</returns>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginManager.GetAuthorizationInfo(System.Guid)">
+            <summary>
+            Возвращает информацию авторизации по идентификатору клиента.
+            </summary>
+            <param name="clientId"> Идентификатор клиента. </param>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginManager.SaveAuthorizationInfo(System.Guid,System.Guid)">
+            <summary>
+            Возвращает информацию авторизации по идентификатору клиента.
+            </summary>
+            <param name="clientId"> Идентификатор клиента. </param>
+            <param name="sessionHash">Информация об авторизации. </param>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginManager.DeleteAuthorizationInfo(System.Guid)">
+            <summary>
+            Удаляет информацию авторизации по идентификатору клиента
+            </summary>
+            <param name="clientId"> Идентификатор клиента. </param>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginManager.OpenDefaultSession(System.Boolean,System.String,System.String,Ascon.Polynom.Api.SessionOptions,Ascon.Polynom.Api.ClientType)">
+            <summary>
+            Открывает сессию по умолчанию для указанного пользователя.
+            </summary>
+            <param name="isWindowsAuthorization">Тип авторизации: <c>true</c> для windows авторизации, иначе логин, пароль. </param>
+            <param name="userName">Имя пользователя.</param>
+            <param name="password">Пароль.</param>
+            <param name="options">Дополнительные опции открытия сессии. </param>
+            <param name="clientType">Тип клиентского приложения. </param>
+            <returns>
+            Экземпляр открытой сессии.
+            </returns>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginManager.OpenDefaultSession(System.Boolean,System.String,System.String,Ascon.Polynom.Api.ConnectionInfo@,Ascon.Polynom.Api.SessionOptions,Ascon.Polynom.Api.ClientType)">
+            <summary>
+            Открывает сессию по умолчанию для указанного пользователя.
+            </summary>
+            <param name="isWindowsAuthorization">Тип авторизации: <c>true</c> для windows авторизации, иначе логин, пароль. </param>
+            <param name="userName">Имя пользователя.</param>
+            <param name="password">Пароль.</param>
+            <param name="info">Информация о подключении. </param>
+            <param name="options">Дополнительные опции открытия сессии. </param>
+            <param name="clientType">Тип клиентского приложения. </param>
+            <returns>
+            Экземпляр открытой сессии.
+            </returns>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginManager.OpenDefaultSession(Ascon.Polynom.Api.UserAccount,Ascon.Polynom.Api.SessionOptions,Ascon.Polynom.Api.ClientType,Ascon.Polynom.Api.ConnectionInfo@)">
+            <summary>
+            Открывает сессию по умолчанию для указанного пользователя.
+            </summary>
+            <returns>
+            Экземпляр открытой сессии.
+            </returns>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginManager.OpenDefaultSession(Ascon.Polynom.Api.SessionOptions,Ascon.Polynom.Api.ClientType,Ascon.Polynom.Api.ConnectionInfo@)">
+            <summary>
+            Открывает сессию по умолчанию для анонимного пользователя
+            </summary>
+            <returns>
+            Экземпляр открытой сессии.
+            </returns>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginManager.OpenSession(System.String,System.String,System.Boolean,System.String,System.String)">
+            <summary>
+            Открывает сессию по указанным параметрам.
+            </summary>
+            <param name="connectionName">Имя подключения.</param>
+            <param name="storageName">Имя хранилища в сервере.</param>
+            <param name="isWindowsAuthorization">Тип авторизации: <c>true</c> для windows авторизации, иначе логин, пароль.</param>
+            <param name="userName">Имя пользователя.</param>
+            <param name="password">Пароль.</param>
+            <returns>
+            Экземпляр открытой сессии.
+            </returns>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginManager.OpenSession(System.String,System.String,Ascon.Polynom.Api.UserAccount,Ascon.Polynom.Api.SessionOptions,Ascon.Polynom.Api.ClientType)">
+            <summary>
+            Открывает сессию по указанным параметрам.
+            </summary>
+            <returns>
+            Экземпляр открытой сессии.
+            </returns>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginManager.OpenSession(System.String,System.String,Ascon.Polynom.Api.SessionOptions,Ascon.Polynom.Api.ClientType)">
+            <summary>
+            Открывает сессию по указанным параметрам для анонимного пользователя.
+            </summary>
+            <returns>
+            Экземпляр открытой сессии.
+            </returns>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginManager.OpenSession(System.String,System.String,Ascon.Polynom.Api.UserAccount,Ascon.Polynom.Api.ConnectionInfo@,Ascon.Polynom.Api.SessionOptions,Ascon.Polynom.Api.ClientType)">
+            <summary>
+            Открывает сессию по указанным параметрам.
+            </summary>
+            <returns>
+            Экземпляр открытой сессии.
+            </returns>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginManager.OpenSession(System.String,System.String,Ascon.Polynom.Api.ConnectionInfo@,Ascon.Polynom.Api.SessionOptions,Ascon.Polynom.Api.ClientType)">
+            <summary>
+            Открывает сессию по указанным параметрам для анонимного пользователя.
+            </summary>
+            <returns>
+            Экземпляр открытой сессии.
+            </returns>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginManager.OpenSession(System.String,Ascon.Polynom.Api.UserAccount,Ascon.Polynom.Api.SessionOptions,Ascon.Polynom.Api.ClientType)">
+            <summary>
+            Открывает сессию по указанным параметрам.
+            </summary>
+            <returns>
+            Экземпляр открытой сессии.
+            </returns>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginManager.OpenSession(System.String,Ascon.Polynom.Api.SessionOptions,Ascon.Polynom.Api.ClientType)">
+            <summary>
+            Открывает сессию по указанным параметрам для анонимного пользователя.
+            </summary>
+            <returns>
+            Экземпляр открытой сессии.
+            </returns>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginManager.OpenSession(System.String,Ascon.Polynom.Api.UserAccount,Ascon.Polynom.Api.SessionOptions,Ascon.Polynom.Api.ClientType,Ascon.Polynom.Api.ConnectionInfo@)">
+            <summary>
+            Открывает сессию по указанным параметрам.
+            </summary>
+            <returns>
+            Экземпляр открытой сессии.
+            </returns>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginManager.OpenSession(System.String,Ascon.Polynom.Api.SessionOptions,Ascon.Polynom.Api.ClientType,Ascon.Polynom.Api.ConnectionInfo@)">
+            <summary>
+            Открывает сессию по указанным параметрам для анонимного пользователя.
+            </summary>
+            <returns>
+            Экземпляр открытой сессии.
+            </returns>
+        </member>
+        <member name="T:Ascon.Polynom.Login.LoginRegistryDto">
+            <summary>
+            Представляет класс данных настройки авторизации.
+            </summary>
+        </member>
+        <member name="M:Ascon.Polynom.Login.LoginRegistryDto.#ctor">
+            <summary>
+            Инициализирует экземпляр класса.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.LoginRegistryDto.UserAccount">
+            <summary>
+            Возвращает или задает данные о пользователе.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.LoginRegistryDto.LastConnection">
+            <summary> Возвращает или задает имя последней сервиса. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.LoginRegistryDto.LastStorage">
+            <summary> Возвращает или задает имя последнего хранилища. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.LoginRegistryDto.LoginInfo">
+            <summary>
+            Идентификаторы сохраненных сессий для клиентов.
+            </summary>
+        </member>
+        <member name="T:Ascon.Polynom.Login.Resource.ErrorStrings">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resource.ErrorStrings.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resource.ErrorStrings.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resource.ErrorStrings.FailedToGetSession">
+            <summary>
+              Looks up a localized string similar to Не удалось получить сессию..
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resource.ErrorStrings.RoleNotSpecified">
+            <summary>
+              Looks up a localized string similar to Роль не указана.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resource.ErrorStrings.ThereIsNoUsers">
+            <summary>
+              Looks up a localized string similar to Нет зарегистрированных пользователей..
+            </summary>
+        </member>
+        <member name="T:Ascon.Polynom.Login.Resource.InfoStrings">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resource.InfoStrings.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resource.InfoStrings.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resource.InfoStrings.ConnectionSuccessfully">
+            <summary>
+              Looks up a localized string similar to Соединение успешно установлено.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resource.InfoStrings.LengthyOperationPerformed">
+            <summary>
+              Looks up a localized string similar to Выполняется длительная операция. Пожалуйста, подождите..
+            </summary>
+        </member>
+        <member name="T:Ascon.Polynom.Login.Resource.Styles.Theme">
+            <summary>
+            Представляет класс общих ресурсов.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resource.Styles.Theme.CommonResources">
+            <summary>
+            Общие ресурсы.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resource.Styles.Theme.Styles">
+            <summary>
+            Стили.
+            </summary>
+        </member>
+        <member name="T:Ascon.Polynom.Login.Resource.UiStrings">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resource.UiStrings.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resource.UiStrings.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resource.UiStrings.Apply">
+            <summary>
+              Looks up a localized string similar to Применить.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resource.UiStrings.AvailableRoles">
+            <summary>
+              Looks up a localized string similar to Доступные роли.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resource.UiStrings.Back">
+            <summary>
+              Looks up a localized string similar to Назад.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resource.UiStrings.Cancel">
+            <summary>
+              Looks up a localized string similar to Отменить.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resource.UiStrings.NotSpecified">
+            <summary>
+              Looks up a localized string similar to Не указана.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resource.UiStrings.Save">
+            <summary>
+              Looks up a localized string similar to Сохранить.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resource.UiStrings.SelectServiceConnection">
+            <summary>
+              Looks up a localized string similar to Выбрать сервер приложений.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resource.UiStrings.TestConnection">
+            <summary>
+              Looks up a localized string similar to Проверить.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resource.UiStrings.UsedBy">
+            <summary>
+              Looks up a localized string similar to Используется.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.ViewModels.LoginVm.HelpTopicId">
+            <summary>
+            Возвращает страничку справки.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.ViewModels.EditServiceConnectionVm.HelpTopicId">
+            <summary>
+            Возвращает страничку справки.
+            </summary>
+        </member>
+        <member name="M:Ascon.Polynom.Login.ViewModels.SessionDefinitionVm.#ctor(Ascon.Polynom.Api.ISessionDefinition)">
+            <summary>
+            Инициализирует экземпляр класса <see cref="T:Ascon.Polynom.Login.ViewModels.SessionDefinitionVm"/>.
+            </summary>
+            <param name="sessionDefinition">Описание сессии.</param>
+        </member>
+        <member name="P:Ascon.Polynom.Login.ViewModels.SessionDefinitionVm.Data">
+            <summary> Возвращает экземпляр описания сессии. </summary>
+            <value> Экземпляр элемента описания сессии. </value>
+        </member>
+        <member name="T:Ascon.Polynom.Login.Views.EditConnectionView">
+            <summary>
+            Представление настройки подключения
+            </summary>
+            <summary>
+            EditConnectionView
+            </summary>
+        </member>
+        <member name="M:Ascon.Polynom.Login.Views.EditConnectionView.#ctor">
+            <summary>
+            Инициализирует экземпляр класса.
+            </summary>
+        </member>
+        <member name="M:Ascon.Polynom.Login.Views.EditConnectionView.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:Ascon.Polynom.Login.Views.LoginPanelView">
+            <summary>
+            Представляет представление панели входа. 
+            </summary>
+            <summary>
+            LoginPanelView
+            </summary>
+        </member>
+        <member name="M:Ascon.Polynom.Login.Views.LoginPanelView.#ctor">
+            <summary>
+            Панель логина.
+            </summary>
+        </member>
+        <member name="F:Ascon.Polynom.Login.Views.LoginPanelView.SessionProperty">
+            <summary>
+            Свойство сессии.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Views.LoginPanelView.Session">
+            <summary>
+            Сессия.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Views.LoginPanelView.ClientId">
+            <summary>
+            Свойство ClientId
+            </summary>
+        </member>
+        <member name="F:Ascon.Polynom.Login.Views.LoginPanelView.ClientIdProperty">
+            <summary>
+            Возвращает и устанавливает идентификатор клиента.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Views.LoginPanelView.Title">
+            <summary>
+            Свойство Title
+            </summary>
+        </member>
+        <member name="F:Ascon.Polynom.Login.Views.LoginPanelView.TitleProperty">
+            <summary>
+            Возвращает и устанавливает заголовок.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Views.LoginPanelView.ClientType">
+            <summary>
+            Возвращает и устанавливает тип клиента.
+            </summary>
+        </member>
+        <member name="F:Ascon.Polynom.Login.Views.LoginPanelView.ClientTypeProperty">
+            <summary>
+            Возвращает и устанавливает тип клиента.
+            </summary>
+        </member>
+        <member name="F:Ascon.Polynom.Login.Views.LoginPanelView.IconUriProperty">
+            <summary>
+            Свойство иконки для диалога логина.
+            </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Views.LoginPanelView.IconUri">
+            <summary>
+            Иконка для диалога логина.
+            </summary>
+        </member>
+        <member name="E:Ascon.Polynom.Login.Views.LoginPanelView.SessionChanged">
+            <summary>
+            Событие изменения сессии, возникает, когда в панели выбирают новую сессию и передает ее параметром события.
+            </summary>
+        </member>
+        <member name="M:Ascon.Polynom.Login.Views.LoginPanelView.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:Ascon.Polynom.Login.Views.LoginView">
+            <summary> Представляет класс представления входа. </summary>
+            <seealso cref="T:System.Windows.Controls.UserControl"/>
+            <summary>
+            LoginView
+            </summary>
+        </member>
+        <member name="M:Ascon.Polynom.Login.Views.LoginView.#ctor">
+            <summary>
+            Инициализирует экземпляр класса <see cref="T:Ascon.Polynom.Login.Views.LoginView"/>.
+            </summary>
+        </member>
+        <member name="M:Ascon.Polynom.Login.Views.LoginView.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:Ascon.Polynom.Login.Views.SelectRoleView">
+            <summary>
+            Представление выбора роли.
+            </summary>
+            <summary>
+            SelectRoleView
+            </summary>
+        </member>
+        <member name="M:Ascon.Polynom.Login.Views.SelectRoleView.#ctor">
+            <summary>
+            Инициализирует экземпляр класса.
+            </summary>
+        </member>
+        <member name="M:Ascon.Polynom.Login.Views.SelectRoleView.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:Ascon.Polynom.Login.Views.SelectServiceView">
+            <summary>
+            Interaction logic for SelectServiceView.xaml
+            </summary>
+            <summary>
+            SelectServiceView
+            </summary>
+        </member>
+        <member name="M:Ascon.Polynom.Login.Views.SelectServiceView.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:Ascon.Polynom.Login.Globals">
+            <summary> Содержит набор общих данных и функций. </summary>
+        </member>
+        <member name="F:Ascon.Polynom.Login.Globals.ModuleName">
+            <summary> Наименование сборки в которой расположен код. </summary>
+        </member>
+        <member name="M:Ascon.Polynom.Login.Globals.#cctor">
+            <summary>Инициализирует <see cref="T:Ascon.Polynom.Login.Globals"/></summary>
+        </member>
+        <member name="T:Ascon.Polynom.Login.Resources">
+            <summary> Содержит определения ресурсов описанных в .xres. </summary>
+        </member>
+        <member name="M:Ascon.Polynom.Login.Resources.#cctor">
+            <summary>Инициализирует <see cref="T:Ascon.Polynom.Login.Resources"/></summary>
+        </member>
+        <member name="M:Ascon.Polynom.Login.Resources.GetString(System.String,System.String)">
+            <summary>Возвращает строку из ресурсов или строку по умолчанию.</summary>
+            <param name="id">Идентификатор строки в ресурсах.</param>
+            <param name="default">Строка по умолчанию, возвращаемая в случае отсутствия строки с указанным идентификатором.</param>
+            <returns>Строку из ресурсов или строку по умолчанию.</returns>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.UI_ConnectionName">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>UI_ConnectionName</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.UI_Connections">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>UI_Connections</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.UI_LogonWindowTitle">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>UI_LogonWindowTitle</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.UI_Create">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>UI_Create</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.UI_Remove">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>UI_Remove</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.UI_Name">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>UI_Name</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.UI_Servers">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>UI_Servers</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.UI_Storages">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>UI_Storages</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.UI_Services">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>UI_Services</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.UI_Service">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>UI_Service</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.UI_ServiceName">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>UI_ServiceName</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.UI_Spn">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>UI_Spn</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.UI_Storage">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>UI_Storage</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.UI_Description">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>UI_Description</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.UI_ServerName">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>UI_ServerName</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.UI_StorageName">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>UI_StorageName</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.UI_Id">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>UI_Id</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.UI_Authorization">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>UI_Authorization</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.UI_SettingConnectionTitle">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>UI_SettingConnectionTitle</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.UI_ChangeSession">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>UI_ChangeSession</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.UI_Role">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>UI_Role</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.UI_Connect">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>UI_Connect</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.Information_UserHaveOneRole">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>Information_UserHaveOneRole</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.Error_AddServiceConfiguration">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>Error_AddServiceConfiguration</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.Error_RemoveServiceConfiguration">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>Error_RemoveServiceConfiguration</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.Error_SelectServiceConfiguration">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>Error_SelectServiceConfiguration</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.Error_AddressValue">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>Error_AddressValue</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.Error_ServerNotFound">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>Error_ServerNotFound</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.Error_StorageNotFound">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>Error_StorageNotFound</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.Error_ConnectionNameEmpty">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>Error_ConnectionNameEmpty</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.Error_WriteClientConfiguration">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>Error_WriteClientConfiguration</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.Error_ConnectionNotFound">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>Error_ConnectionNotFound</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.Error_PortValue">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>Error_PortValue</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.Error_StoragesListIsEmpty">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>Error_StoragesListIsEmpty</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.Error_ConnectionListIsEmpty">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>Error_ConnectionListIsEmpty</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.Error_UserNameIsEmpty">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>Error_UserNameIsEmpty</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.Error_PasswordIsEmpty">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>Error_PasswordIsEmpty</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.Error_ServiceNameIsEmpty">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>Error_ServiceNameIsEmpty</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.Error_StorageNameIsEmpty">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>Error_StorageNameIsEmpty</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.Error_UserHaveNotRole">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>Error_UserHaveNotRole</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.Error_StorageVersion">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>Error_StorageVersion</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.UI_Address">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>UI_Address</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.UI_RememberMe">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>UI_RememberMe</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.UI_Cancel">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>UI_Cancel</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.Error_RoleNotAvailable">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>Error_RoleNotAvailable</strong>. </summary>
+        </member>
+        <member name="P:Ascon.Polynom.Login.Resources.UI_Settings">
+            <summary> Возвращает текущее значение ресурса с идентификатором <strong>UI_Settings</strong>. </summary>
+        </member>
+    </members>
+</doc>
