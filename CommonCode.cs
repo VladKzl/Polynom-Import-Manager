@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,12 +16,16 @@ namespace TCS_Polynom_data_actualiser
             if(percent == 100)
                 Console.WriteLine();
         }
-        public static bool UserValidation()
+        public static bool UserValidationPlusOrMinus(string plusText, string minusText)
         {
             bool userActionBool = true;
             do
             {
-                Console.WriteLine("+/-");
+                Console.WriteLine
+                    (
+                        $"\"+\" - {plusText}\n" +
+                        $"\"-\" - {minusText}\n"
+                    );
                 string userAction = Console.ReadLine();
                 switch (userAction)
                 {
@@ -45,6 +50,20 @@ namespace TCS_Polynom_data_actualiser
             }
             while (true);
             return userActionBool;
+        }
+        public static bool UserValidationPlus()
+        {
+            string userAction;
+            do
+            {
+                
+                userAction = Console.ReadLine();
+                if(userAction != "+")
+                    Console.WriteLine("Не верно. Введите \"+\" или закройте программу");
+
+            }
+            while (userAction != "+");
+            return true;
         }
     }
 }

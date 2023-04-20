@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using static TCS_Polynom_data_actualiser.AppSettings;
+using static TCS_Polynom_data_actualiser.AppBase;
 
 namespace TCS_Polynom_data_actualiser
 {
@@ -37,7 +37,7 @@ namespace TCS_Polynom_data_actualiser
             ITransaction transaction = PolynomBase.Session.Objects.StartTransaction();
             foreach (string type in CommonSettings.Types)
             {
-                var workSheet = ElementsActualisation.CurrentElementsActualisationWorkBook.Value.Worksheet(type);
+                var workSheet = ElementsActualisationWorkBook.Value.Worksheet(type);
                 // Так как исапольузется Range то буквы колонок меняются на A,B,C и тд.
                 var elementsRows = workSheet.Range(workSheet.Cell(3, "B"), workSheet.Column("C").LastCellUsed()).Rows();
                 
@@ -83,7 +83,7 @@ namespace TCS_Polynom_data_actualiser
         private static void ElementsDeletion(string elementName)
         {
             List<IElement> elements;
-            if (PolynomBase.TrySearchElementsInAllReferencesByName(elementName, out elements))
+            if (PolynomBase.TrySearchElementsInAllReferences(elementName, out elements))
             {
                 foreach(var element in elements)
                     element.Delete();
@@ -96,7 +96,7 @@ namespace TCS_Polynom_data_actualiser
         private static void RootGroupsDeletion(string groupName)
         {
             List<IGroup> groups;
-            if (PolynomBase.TrySearchGroupsInAllReferencesByName(groupName, out groups))
+            if (PolynomBase.TrySearchGroupsInAllReferences(groupName, out groups))
             {
                 foreach (var group in groups)
                     group.Delete();
