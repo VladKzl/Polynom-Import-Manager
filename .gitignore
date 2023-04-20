@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 .vs/
 *.rsuser
 *.suo
@@ -18,3 +19,6 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
+=======
+.vs/
+>>>>>>> first_remake
