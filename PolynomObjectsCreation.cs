@@ -7,35 +7,30 @@ using DocumentFormat.OpenXml.Spreadsheet;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.RightsManagement;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using static TCS_Polynom_data_actualiser.AppSettings;
+using static TCS_Polynom_data_actualiser.AppBase;
 
 namespace TCS_Polynom_data_actualiser
 {
     public class PolynomObjectsCreation
     {
-        public static XLWorkbook CurrentGroupsActualisationWorkBook = new XLWorkbook(GroupsActualisationSettings.FilePath);
-        public static Lazy<XLWorkbook> CurrentElementsActualisationWorkBook = new Lazy<XLWorkbook>(new Func<XLWorkbook>(() => new XLWorkbook(ElementsActualisationSettings.FilePath)));
-        public static Dictionary<string, List<(string groupName, IGroup group)>> CreatedGroupsAndNamesByType = new Dictionary<string, List<(string name, IGroup group)>>();
-        public static Dictionary<string, List<(IElement element, IGroup group)>> CreatedGroupAndElementPairByType = new Dictionary<string, List<(IElement element, IGroup group)>>();
-        public static Dictionary<string, IGroup> RootGroupByType = new Dictionary<string, IGroup>();
+        public static Dictionary<string, IGroup> RootGroupByTcsType = new Dictionary<string, IGroup>();
+        public static Dictionary<string, List<IGroup>> CreatedGroupsByTcsType = new Dictionary<string, List<IGroup>>();
+        public static Dictionary<string, List<(IElement element, IGroup group)>> CreatedElementAndGroupByTcsType = new Dictionary<string, List<(IElement element, IGroup group)>>();
         private static ITransaction StartedTransaction = PolynomBase.Session.Objects.StartTransaction();
-        public static void RootGroupCreation()
+        private static void RootGroupCreation()
         {
             foreach (string type in CommonSettings.Types)
             {
                 IGroup rootGroup = null;
                 string rootGroupName = $"Нераспределенные {type}";
-                var parentCatalog = PolynomBase.GroupsByType[type].First().ParentCatalog;
-                if (PolynomBase.TrySearchGroupInAllReferencesByName(rootGroupName, out rootGroup))
-                {}
-                else
-                {
+                var parentCatalog = PolynomBase.ElementsActualisation.GroupsByTcsType[type].First().ParentCatalog;
+                if (!PolynomBase.TrySearchGroupInAllReferences(rootGroupName, out rootGroup))
                     rootGroup = parentCatalog.CreateGroup(rootGroupName);
-                }
-                RootGroupByType.Add(type, rootGroup);
+                RootGroupByTcsType.Add(type, rootGroup);
             }
         }
         public static void GroupsCreation()
@@ -43,145 +38,131 @@ namespace TCS_Polynom_data_actualiser
             RootGroupCreation();
             foreach (string type in CommonSettings.Types)
             {
-                List<(string groupName, IGroup group)> groupAndNamePairs = new List<(string groupName, IGroup group)>();
-                var rows = CurrentGroupsActualisationWorkBook.Worksheet(type).RangeUsed().Rows().ToList();
+                List<IGroup> groupElements = new List<IGroup>();
+                var rows = GroupsActualisationWorkBook.Value.Worksheet(type).RangeUsed().Rows().ToList();
                 rows.RemoveAt(0);
                 foreach (var row in rows)
                 {
                     string groupNameTcs = (string)row.Cell("A").Value;
                     string groupNamePolynom = (string)row.Cell("B").Value;
                     
-                    IGroup rootGroup;
                     if (groupNamePolynom == "")
                     {
-                        RootGroupByType.TryGetValue(type, out rootGroup);
-                        var newGroup = rootGroup.CreateGroup(groupNameTcs);
-                        groupAndNamePairs.Add((groupName: groupNameTcs, group: newGroup));
+                        var newGroup = RootGroupByTcsType[type].CreateGroup(groupNameTcs);
+                        groupElements.Add(newGroup);
                         CommonCode.GetPercent(rows.Count(), row.RowNumber() - 1, type + "-");
+                        continue;
                     }
-                    else
+                    IGroup findedGroup = null;
+                    foreach (string groupName in ElementsActualisationSettings.TcsByPolynomTypes[type])
                     {
-                        IGroup findedGroup = null;
-                        foreach (string baseGroup in ElementsActualisationSettings.TcsToPolynomTypes[type])
+                        if (PolynomBase.TrySearchGroupInGroup(groupName, groupNamePolynom, out findedGroup))
                         {
-                            if (PolynomBase.TrySearchGroupInGroupByName(baseGroup, groupNamePolynom, out findedGroup))
+                            groupElements.Add(findedGroup);
+                            break;
+                        }
+                    }
+                    if(findedGroup == null)
+                    {
+                        var newGroup = RootGroupByTcsType[type].CreateGroup(groupNameTcs);
+                        groupElements.Add(newGroup);
+                        CommonCode.GetPercent(rows.Count(), row.RowNumber(), type + "-");
+
+                        Console.WriteLine($"Группа \"{groupNamePolynom}\" не найдена. Вы не верно указали имя группы.\n" +
+                            $"Но группа создана в родительском каталоге и элемент будет помещен в нее.");
+                    }
+                }
+                CreatedGroupsByTcsType.Add(type, groupElements);
+            }
+        }
+        public static void ElementsCreation()
+        {
+            foreach (string type in CommonSettings.Types)
+            {
+                List<IGroup> typeGroups = CreatedGroupsByTcsType[type];
+                var workSheet = ElementsActualisationWorkBook.Value.Worksheet(type);
+                // Так как исапольузется Range то буквы колонок меняются на A,B,C и тд.
+                var elementsRows = workSheet.Range(workSheet.Cell(3, "B"), workSheet.Column("C").LastCellUsed().CellRight()).Rows();
+
+                foreach (var elementRow in elementsRows)
+                {
+                    string elementNameTcs = (string)elementRow.Cell("A").Value;
+                    string groupNameTcs = (string)elementRow.Cell("B").Value;
+                    string elementNamePolynomDouble = elementRow.Cell("C").IsEmpty() ? "" : (string)elementRow.Cell("C").Value;
+                    Validation();
+
+                    IGroup group = typeGroups.Single(x => x.Name == groupNameTcs);
+                    group.CreateElement(elementNameTcs);
+
+                    CommonCode.GetPercent(elementsRows.Count(), elementRow.RowNumber() - 2, type + "-");
+
+                    void Validation()
+                    {
+                        if (elementNamePolynomDouble == "")
+                            return;
+
+                        List<IElement> findedElements = null;
+                        foreach (var createdGroup in CreatedGroupsByTcsType[type])
+                        {
+                            if (PolynomBase.TrySearchElementsInGroup(elementNamePolynomDouble, createdGroup, out findedElements))
                             {
-                                groupAndNamePairs.Add((groupName: groupNameTcs, group: findedGroup));
+                                findedElements.ForEach(x => x.Delete());
                                 break;
                             }
                         }
-                        if(findedGroup == null)
-                        {
-                            RootGroupByType.TryGetValue(type, out rootGroup);
-                            var newGroup = rootGroup.CreateGroup(groupNameTcs);
-                            groupAndNamePairs.Add((groupName: groupNameTcs, group: findedGroup));
-                            CommonCode.GetPercent(rows.Count(), row.RowNumber(), type + "-");
-
-                            Console.WriteLine($"Группа \"{groupNamePolynom}\" не найдена. Вы не верно указали имя группы.\n" +
-                                $"Но группа создана в родительском каталоге и элемент будет помещен в нее.");
-                        }
+                        if (findedElements == null)
+                            Console.WriteLine($"Элемент-дубль {elementNamePolynomDouble} столбца \"D\" типа {type} не был найден.");
                     }
                 }
-                CreatedGroupsAndNamesByType.Add(type, groupAndNamePairs);
             }
+            Console.WriteLine("Применяем изменения..");
+            StartedTransaction.Commit();
+            Console.WriteLine("Изменения применены.");
         }
-        public static void ElementsCreation(bool _useImportFile)
+        public static void ElementsCreationImportFile()
         {
-            bool useImportFile = _useImportFile;
             foreach (string type in CommonSettings.Types)
             {
-                List<(string groupName, IGroup group)> groupAndNamePairs = CreatedGroupsAndNamesByType[type];
-                List<(IElement element, IGroup group)> elementAndGroupPair = new List<(IElement element, IGroup group)>();
-                var workSheet = CurrentElementsActualisationWorkBook.Value.Worksheet(type);
+                List<IGroup> typeGroups = CreatedGroupsByTcsType[type];
+                List<(IElement element, IGroup group)> elementAndGroup = new List<(IElement element, IGroup group)>();
+                var workSheet = ElementsActualisationWorkBook.Value.Worksheet(type);
                 // Так как исапольузется Range то буквы колонок меняются на A,B,C и тд.
-                var elementsRows = workSheet.Range(workSheet.Cell(3, "B"), workSheet.Column("C").LastCellUsed().CellRight().CellRight()).Rows();
+                var elementsRows = workSheet.Range(workSheet.Cell(3, "B"), workSheet.Column("C").LastCellUsed().CellRight()).Rows();
 
-                if (ElementsActualisationSettings.Status == ActualisationStatus.Не_актуализирован)
+                foreach (var elementRow in elementsRows)
                 {
-                    foreach(var elementRow in elementsRows)
-                    {
-                        string elementNameTcs = (string)elementRow.Cell("A").Value;
-                        string groupNameTcs = (string)elementRow.Cell("B").Value;
+                    string elementNameTcs = (string)elementRow.Cell("A").Value;
+                    string groupNameTcs = (string)elementRow.Cell("B").Value;
+                    string elementNamePolynomDouble = elementRow.Cell("C").IsEmpty() ? "" : (string)elementRow.Cell("C").Value;
+                    Validation();
 
-                        IGroup polynomGroupObject;
-                        if (groupAndNamePairs.Where(x => x.groupName == groupNameTcs).Any())
+                    IGroup group = typeGroups.Single(x => x.Name == groupNameTcs);
+                    var element = group.CreateElement(elementNameTcs);
+                    elementAndGroup.Add((element, group));
+                    CommonCode.GetPercent(elementsRows.Count(), elementRow.RowNumber() - 2, type + "-");
+
+                    void Validation()
+                    {
+                        if (elementNamePolynomDouble == "")
+                            return;
+
+                        List<IElement> findedElements = null;
+                        foreach (var createdGroup in CreatedGroupsByTcsType[type])
                         {
-                            polynomGroupObject = groupAndNamePairs.Where(x => x.groupName == groupNameTcs).First().group;
-                            if (useImportFile)
+                            if (PolynomBase.TrySearchElementsInGroup(elementNamePolynomDouble, createdGroup, out findedElements))
                             {
-                                var element = polynomGroupObject.CreateElement(elementNameTcs);
-                                elementAndGroupPair.Add((element, polynomGroupObject));
-                                CommonCode.GetPercent(elementsRows.Count(), elementRow.RowNumber() - 2, type + "-");
-                            }
-                            else
-                            {
-                                polynomGroupObject.CreateElement(elementNameTcs);
-                                CommonCode.GetPercent(elementsRows.Count(), elementRow.RowNumber() - 2, type + "-");
+                                findedElements.ForEach(x => x.Delete());
+                                break;
                             }
                         }
-                        else
-                        {
-                            Console.WriteLine($"Элемент не добавлен, так как группа не найдена.");
-                        }
+                        if (findedElements == null)
+                            Console.WriteLine($"Элемент-дубль {elementNamePolynomDouble} столбца \"D\" типа {type} не был найден.");
                     }
                 }
-                else
-                {
-                    foreach (var elementRow in elementsRows)
-                    {
-                        string elementNameTcs = (string)elementRow.Cell("A").Value;
-                        string groupNameTcs = (string)elementRow.Cell("B").Value;
-                        string whatToDo = (string)elementRow.Cell("C").Value;
-                        string currentPolynomName = (string)elementRow.Cell("D").Value;
-
-                        IElement polynomElementObject;
-                        IGroup polynomGroupObject;
-                        if (currentPolynomName != "")
-                        {
-                            if(PolynomBase.TrySearchElementInAllReferencesByName(currentPolynomName, out polynomElementObject))
-                            {
-                                polynomElementObject.Name = elementNameTcs;
-                            }
-                            else
-                            {
-                                Console.WriteLine($"Элемент не переименован, так как не найден в Полиноме.");
-                            }
-                        }
-                        else
-                        {
-                            if (groupAndNamePairs.Where(x => x.groupName == groupNameTcs).Any())
-                            {
-                                polynomGroupObject = groupAndNamePairs.Where(x => x.groupName == groupNameTcs).First().group;
-                                if (useImportFile)
-                                {
-                                    var element = polynomGroupObject.CreateElement(elementNameTcs);
-                                    elementAndGroupPair.Add((element, polynomGroupObject));
-                                    CommonCode.GetPercent(elementsRows.Count(), elementRow.RowNumber(), type + "-");
-                                }
-                                else
-                                    polynomGroupObject.CreateElement(elementNameTcs);
-                            }
-                            else
-                            {
-                                Console.WriteLine($"Элемент не добавлен, так как группа не найдена.");
-                            }
-                        }
-                    }
-                }
-                if (useImportFile)
-                    CreatedGroupAndElementPairByType.Add(type, elementAndGroupPair);
+                CreatedElementAndGroupByTcsType.Add(type, elementAndGroup);
             }
-            if (useImportFile)
-            {
-                ImportFileCreation.CreateFile();
-                StartedTransaction.Rollback();
-            }
-            else
-            {
-                Console.WriteLine($"Изменения применяются, ожидайте.");
-                StartedTransaction.Commit();
-            }
-                /*StartedTransaction.Rollback();*/
+            ImportFile.AddGroupsAndElements();
+            StartedTransaction.Rollback();
         }
     }
 }

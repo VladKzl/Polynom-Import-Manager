@@ -81,21 +81,20 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Algorithm.cs" />
-    <Compile Include="AppSettings.cs" />
+    <Compile Include="Bases\AppBase.cs" />
     <Compile Include="ChangesRollback.cs" />
-    <Compile Include="ImportFileCreation.cs" />
+    <Compile Include="ImportFile.cs" />
     <Compile Include="PolynomObjectsCreation.cs" />
     <Compile Include="CommonCode.cs" />
-    <Compile Include="GroupsActualisation.cs" />
-    <Compile Include="ElementsActualisation.cs" />
-    <Compile Include="PolynomBase.cs" />
+    <Compile Include="ElementsActualisation\GroupsActualisation.cs" />
+    <Compile Include="ElementsActualisation\ElementsActualisation.cs" />
+    <Compile Include="Bases\PolynomBase.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TCSBase.cs" />
+    <Compile Include="Bases\TCSBase.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
-    <None Include="packages.config" />
+    <Folder Include="PropertyesActualisatuion\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
