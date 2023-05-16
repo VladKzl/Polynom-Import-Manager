@@ -1,5 +1,4 @@
-﻿using Ascon.Polynom.Api;
-using Ascon.Polynom.Login;
+﻿using Ascon.Polynom.Login;
 using Ascon.Vertical.Technology;
 using DocumentFormat.OpenXml.Office.PowerPoint.Y2021.M06.Main;
 using DocumentFormat.OpenXml.Spreadsheet;
@@ -16,6 +15,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using static TCS_Polynom_data_actualiser.AppBase;
+using Ascon.Polynom.Api;
 
 namespace TCS_Polynom_data_actualiser
 {
@@ -25,8 +25,10 @@ namespace TCS_Polynom_data_actualiser
         {
             if (Session == null)
                 Session = GetSession();
+            Transaction = Session.Objects.StartTransaction();
         }
         public static ISession Session;
+        public static ITransaction Transaction;
         private static ISession GetSession()
         {
             ISession session;
@@ -46,14 +48,14 @@ namespace TCS_Polynom_data_actualiser
             // GroupsByTcsType инициализируется отдельно, так как остальные очень долгие.
             public static void Initialize()
             {
-                Console.WriteLine("Получаем данные из Полином. Подождите..");
+                Console.WriteLine("Получаем элементы из Полином. Подождите..");
                 FillElementsByTypeAndElementsNamesByTypePropertyes();
-                Console.WriteLine("Получили данные из Полином.\n");
+                Console.WriteLine("Получили элементы из Полином.\n");
             }
             public static Dictionary<string, List<IGroup>> GroupsByTcsType { get; set; } = new Func<Dictionary<string, List<IGroup>>>(() =>
             {
                 Dictionary<string, List<IGroup>> groupsByType = new Dictionary<string, List<IGroup>>();
-                foreach (var tcsByPolynomGroupsPair in ElementsActualisationSettings.TcsByPolynomTypes)
+                foreach (var tcsByPolynomGroupsPair in ElementsFileSettings.TcsByPolynomTypes)
                 {
                     List<IGroup> groups = new List<IGroup>();
                     foreach (string polynomTypeName in tcsByPolynomGroupsPair.Value)
@@ -68,8 +70,8 @@ namespace TCS_Polynom_data_actualiser
                 }
                 return groupsByType;
             }).Invoke();
-            public static Dictionary<string, List<IElement>> ElementsByTcsType { get; set; } = new Dictionary<string, List<IElement>>();
-            public static Dictionary<string, List<string>> ElementsNameByTcsType { get; set; } = new Dictionary<string, List<string>>();
+            public static Dictionary<string, List<IElement>> ElementsByTcsType { get; set; }
+            public static Dictionary<string, List<string>> ElementsNameByTcsType { get; set; }
             private static void FillElementsByTypeAndElementsNamesByTypePropertyes()
             {
                 foreach (var groupsElementsByTypePair in GroupsByTcsType)
@@ -102,12 +104,20 @@ namespace TCS_Polynom_data_actualiser
         }
         public class PropertyesActualisation
         {
-
+            static PropertyesActualisation()
+            {
+                Console.WriteLine("Получаем свойства из Полином. Подождите..");
+                Properties = Session.Objects.AllPropertyDefinitions.ToList();
+                PropertiesNames = Session.Objects.AllPropertyDefinitions.Select(x => x.Name).ToList();
+                Console.WriteLine("Получили свойства из Полином.\n");
+            }
+            public static List<IPropertyDefinition> Properties { get; set; }
+            public static List<string> PropertiesNames { get; set; }
         }
-        public static bool TrySearchGroupInGroup(string baseGroupName, string targetGroupName, out IGroup findedGroup)
+        public static bool TrySearchGroupsInGroup(string _baseGroupName, string _targetGroupName, out List<IGroup> findedGroups)
         {
-            IGroup _findedGroup;
-            if(TrySearchGroupInAllReferences(baseGroupName, out _findedGroup))
+            IGroup baseGroup;
+            if(TrySearchGroupInAllReferences(_baseGroupName, out baseGroup))
             {
                 var concept = Session.Objects.GetKnownConcept(KnownConceptKind.Group);
                 var propDef = Session.Objects.GetKnownPropertyDefinition(KnownPropertyDefinitionKind.Name);
@@ -116,21 +126,21 @@ namespace TCS_Polynom_data_actualiser
                     concept,
                     propDef,
                     (int)StringCompareOperation.Equal,
-                    ((IStringPropertyDefinition)propDef).CreateStringPropertyValueData(targetGroupName),
+                    ((IStringPropertyDefinition)propDef).CreateStringPropertyValueData(_targetGroupName),
                     null,
                     (int)StringCompareOptions.None);
-                var resultScope = _findedGroup.Intersect(condition);
-                IGroup group = resultScope.GetEnumerable<IGroup>().FirstOrDefault();
-                if (group != null)
+                var resultScope = baseGroup.Intersect(condition);
+                List<IGroup> groups = resultScope.GetEnumerable<IGroup>().ToList();
+                if (groups.Count > 0)
                 {
-                    findedGroup = group;
+                    findedGroups = groups;
                     return true;
                 }
-                findedGroup = null;
+                findedGroups = null;
                 return false;
             }
-            findedGroup = null;
-            Console.WriteLine($"Базовая группа \"{baseGroupName}\" не найдена при попытке найти группу в группе");
+            findedGroups = null;
+            Console.WriteLine($"Базовая группа \"{_baseGroupName}\" не найдена при попытке найти группу в группе");
             return false;
         }
         public static bool TrySearchGroupInAllReferences(string groupName, out IGroup findedGroup)
@@ -287,5 +297,28 @@ namespace TCS_Polynom_data_actualiser
                 return false;
             return true;
         }
+/*        public static bool TrySearchPropertiesInAllReferences()
+        {
+            
+
+            var concept = Session.Objects.GetKnownConcept(KnownConceptKind.);
+
+            var propDefCatalog = (IPropertyOwnerScope)Session.Objects.PropDefCatalog.PropDefGroups.First().PropertyDefinitions.First().;
+
+
+
+            var condition = Session.Objects.CreateSimpleCondition(
+                concept,
+                null,
+                (int)StringCompareOperation.None,
+                null,
+                null,
+                (int)StringCompareOptions.None);
+
+            condition.In
+            var resultScope = propDefCatalog.Intersect(condition);
+
+            return true;
+        }*/
     }
 }

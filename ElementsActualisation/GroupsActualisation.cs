@@ -1,4 +1,5 @@
 ﻿using Ascon.Polynom.Api;
+using Ascon.Vertical.Application.Configuration;
 using ClosedXML.Excel;
 using DocumentFormat.OpenXml.Spreadsheet;
 using System;
@@ -18,7 +19,7 @@ namespace TCS_Polynom_data_actualiser
             DistinctedTCSGroupsNamesByType = new Func<Dictionary<string, List<string>>>(() =>
             {
                 Dictionary<string, List<string>> distinctedGroupsByType = new Dictionary<string, List<string>>();
-                foreach (var type in CommonSettings.Types)
+                foreach (var type in ElementsFileSettings.Types)
                 {
                     var workSheet = ElementsActualisationWorkBook.Value.Worksheet(type);
                     List<string> groupsNames = workSheet.Range(workSheet.Cell(3, "C"), workSheet.Column("C").LastCellUsed()).CellsUsed(true).Select(cell => (string)cell.Value).ToList();
@@ -37,22 +38,23 @@ namespace TCS_Polynom_data_actualiser
         public static Dictionary<string, List<string>> DistinctedTCSGroupsNamesByType { get; set; }
         public static void CreateAndFillGroupsDocument()
         {
-            if (File.Exists(GroupsActualisationSettings.FilePath))
-                File.Move(GroupsActualisationSettings.FilePath, GroupsActualisationSettings.ArchivePath);
+            if (File.Exists(GroupsFileSettings.FilePath))
+                File.Move(GroupsFileSettings.FilePath, GroupsFileSettings.ArchivePath);
             CreateDocAndSheets();
             ActualiseGroups();
             using (NewGroupsActualisationWorkBook)
             {
-                NewGroupsActualisationWorkBook.SaveAs(GroupsActualisationSettings.FilePath);
+                NewGroupsActualisationWorkBook.SaveAs(GroupsFileSettings.FilePath);
             }
 
             void CreateDocAndSheets()
             {
-                foreach (string type in CommonSettings.Types)
+                foreach (string type in ElementsFileSettings.Types)
                 {
                     var sheet = NewGroupsActualisationWorkBook.AddWorksheet(type);
                     sheet.Cell(1, "A").Value = "TCS";
                     sheet.Cell(1, "B").Value = "Polynom";
+                    sheet.Cell(1, "C").Value = "Выбор группы Polynom";
                 }
             }
             void ActualiseGroups()
@@ -65,17 +67,52 @@ namespace TCS_Polynom_data_actualiser
                         string group = groupsPair.Value[i];
                         int cellRowNum = i + 2;
                         workSheet.Cell(cellRowNum, "A").Value = group;
-                        IGroup findedGroup = null;
-                        foreach (string polynomType in ElementsActualisationSettings.TcsByPolynomTypes[groupsPair.Key])
+                        List<IGroup> findedAllGroups = new List<IGroup>();
+                        foreach (string polynomType in ElementsFileSettings.TcsByPolynomTypes[groupsPair.Key])
                         {
-                            if (PolynomBase.TrySearchGroupInGroup(polynomType, group, out findedGroup))
-                            {
-                                workSheet.Cell(cellRowNum, "B").Value = findedGroup.Name;
-                                break;
-                            }
-                            workSheet.Cell(cellRowNum, "B").Value = "";
+                            List<IGroup> findedGroups = null;
+                            if (PolynomBase.TrySearchGroupsInGroup(polynomType, group, out findedGroups))
+                                findedAllGroups.AddRange(findedGroups);
                         }
+                        if(findedAllGroups != null)
+                            workSheet.Cell(cellRowNum, "B").Value = CreatePaths(findedAllGroups);
+                        if (findedAllGroups == null)
+                            workSheet.Cell(cellRowNum, "B").Value = "";
                     }
+                }
+                string CreatePaths(List<IGroup> groups)
+                {
+                    StringBuilder pathsBouilder = new StringBuilder();
+                    StringBuilder pathBuilder = new StringBuilder();
+
+                    for(int g = 0; g < groups.Count; g++)
+                    {
+                        var paths = groups[g].GetPath();
+                        for (int p = 0; p < paths.Count; p++)
+                        {
+                            if(paths[p] is IReference)
+                            {
+                                IReference reference = (IReference)paths[p];
+                                pathBuilder.Append(reference.Name + "/");
+                            }
+                            if (paths[p] is ICatalog)
+                            {
+                                ICatalog catalog = (ICatalog)paths[p];
+                                pathBuilder.Append(catalog.Name = "/");
+                            }
+                            if (paths[p] is IGroup)
+                            {
+                                IGroup _group = (IGroup)paths[p];
+                                pathBuilder.Append(_group.Name + "/");
+                            }
+                        }
+                        if(g < groups.Count - 1)
+                            pathsBouilder.AppendLine($"{g} - {pathBuilder}");
+                        if (g == groups.Count - 1)
+                            pathsBouilder.Append($"{g} - {pathBuilder}");
+                        pathBuilder.Clear();
+                    }
+                    return pathsBouilder.ToString();
                 }
             }
         }
