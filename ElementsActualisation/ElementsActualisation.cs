@@ -16,17 +16,17 @@ namespace TCS_Polynom_data_actualiser
         public static XLWorkbook NewElementsActualisationWorkBook = new XLWorkbook();
         public static void CreateAndFillElementsDocument()
         {
-            if (File.Exists(ElementsActualisationSettings.FilePath))
-                File.Move(ElementsActualisationSettings.FilePath, ElementsActualisationSettings.ArchivePath);
+            if (File.Exists(ElementsFileSettings.FilePath))
+                File.Move(ElementsFileSettings.FilePath, ElementsFileSettings.ArchivePath);
             CreateDocAndSheets();
             FillSheets();
             using (NewElementsActualisationWorkBook)
             {
-                NewElementsActualisationWorkBook.SaveAs(ElementsActualisationSettings.FilePath);
+                NewElementsActualisationWorkBook.SaveAs(ElementsFileSettings.FilePath);
             }
             void CreateDocAndSheets()
             {
-                foreach (string type in CommonSettings.Types)
+                foreach (string type in ElementsFileSettings.Types)
                 {
                     var sheet = NewElementsActualisationWorkBook.AddWorksheet(type);
                     sheet.Cell(1, "A").Value = "В TCS есть в Полиноме есть";
@@ -60,7 +60,7 @@ namespace TCS_Polynom_data_actualiser
             }
             void FillSheets()
             {
-                foreach (string type in CommonSettings.Types)
+                foreach (string type in ElementsFileSettings.Types)
                 {
                     var workSheet = NewElementsActualisationWorkBook.Worksheets.Worksheet(type);
 
@@ -91,7 +91,7 @@ namespace TCS_Polynom_data_actualiser
                         {
                             int rowNum = i + _rowNum;
 
-                            var nameAndGroupPairs = TCSBase.ElementsActualisation.ElementsNameAndGroupForAllTypes.FindAll(x => x.elementName == tcsExceptPolynom[i]);
+                            var nameAndGroupPairs = TCSBase.Elements.AllTypesElementAndGroupNames.FindAll(x => x.elementName == tcsExceptPolynom[i]);
                             if(nameAndGroupPairs.Count == 1)
                             {
                                 workSheet.Cell(rowNum, "B").Value = nameAndGroupPairs.First().elementName;
@@ -137,19 +137,19 @@ namespace TCS_Polynom_data_actualiser
         }
         private static List<string> TCSIntersectPolynom(string type)
         {
-            return TCSBase.ElementsActualisation.ElementsNameByTcsType[type].Intersect(PolynomBase.ElementsActualisation.ElementsNameByTcsType[type]).ToList();
+            return TCSBase.Elements.ElementsNameByTcsType[type].Intersect(PolynomBase.ElementsActualisation.ElementsNameByTcsType[type]).ToList();
         }
         private static List<string> TCSExceptPolynom(string type)
         {
-            return TCSBase.ElementsActualisation.ElementsNameByTcsType[type].Except(PolynomBase.ElementsActualisation.ElementsNameByTcsType[type]).ToList();
+            return TCSBase.Elements.ElementsNameByTcsType[type].Except(PolynomBase.ElementsActualisation.ElementsNameByTcsType[type]).ToList();
         }
         private static List<string> PolynomExceptTCS(string type)
         {
-            return PolynomBase.ElementsActualisation.ElementsNameByTcsType[type].Except(TCSBase.ElementsActualisation.ElementsNameByTcsType[type]).ToList();
+            return PolynomBase.ElementsActualisation.ElementsNameByTcsType[type].Except(TCSBase.Elements.ElementsNameByTcsType[type]).ToList();
         }
         private static List<string> AllTCS(string type)
         {
-            return TCSBase.ElementsActualisation.ElementsNameByTcsType[type];
+            return TCSBase.Elements.ElementsNameByTcsType[type];
         }
         private static List<string> AllPolynom(string type)
         {

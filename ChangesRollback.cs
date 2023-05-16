@@ -35,7 +35,7 @@ namespace TCS_Polynom_data_actualiser
         {
             Console.WriteLine("Начали откат");
             ITransaction transaction = PolynomBase.Session.Objects.StartTransaction();
-            foreach (string type in CommonSettings.Types)
+            foreach (string type in ElementsFileSettings.Types)
             {
                 var workSheet = ElementsActualisationWorkBook.Value.Worksheet(type);
                 // Так как исапольузется Range то буквы колонок меняются на A,B,C и тд.
@@ -60,7 +60,7 @@ namespace TCS_Polynom_data_actualiser
 
             Console.WriteLine("Начали откат");
             ITransaction transaction = PolynomBase.Session.Objects.StartTransaction();
-            foreach (string type in CommonSettings.Types)
+            foreach (string type in ElementsFileSettings.Types)
             {
                 XLWorkbook archiveBook = new XLWorkbook(path);
                 var workSheet = archiveBook.Worksheet(type);

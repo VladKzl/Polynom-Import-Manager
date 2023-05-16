@@ -56,11 +56,9 @@ namespace TCS_Polynom_data_actualiser
             string userAction;
             do
             {
-                
                 userAction = Console.ReadLine();
                 if(userAction != "+")
                     Console.WriteLine("Не верно. Введите \"+\" или закройте программу");
-
             }
             while (userAction != "+");
             return true;
