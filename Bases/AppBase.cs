@@ -1,4 +1,7 @@
 ﻿using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Drawing;
+using DocumentFormat.OpenXml.Spreadsheet;
+using Microsoft.SqlServer.Server;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -10,8 +13,9 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Security.RightsManagement;
 using System.Text;
 using System.Threading.Tasks;
+using Path = System.IO.Path;
 
-namespace TCS_Polynom_data_actualiser
+namespace Polynom_Import_Manager
 {
     public enum ActualisationStatus
     {
@@ -23,165 +27,142 @@ namespace TCS_Polynom_data_actualiser
         public static void Initialize() 
         {
             CommonSettings.Initialize();
-            ElementsFileSettings.Initialize();
-            GroupsFileSettings.Initialize();
-            PropertiesSettings.Initialize();
-            ImportFileSettings.Initialize();
+            ElementsSettings.Initialize();
+
+            ElementsFile.Initialize();
+            PropertiesFile.Initialize();
+
+            _ImportFile.Initialize();
         }
-        public static string AppDir { get; set; } = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location).Replace("\\bin\\Debug", "");
         public static XLWorkbook SettingsWorkBook { get; set; } = new XLWorkbook(Program.settingsWorkbookPath);
-        public static Lazy<XLWorkbook> ElementsActualisationWorkBook { get; set; } = new Lazy<XLWorkbook>(() => 
+        public static void ReconnectSettingsWorkBook()
         {
-            if (!File.Exists(ElementsFileSettings.FilePath))
-                throw new Exception("Файл \"Актуализация элементов\" не найден.");
-            return new XLWorkbook(ElementsFileSettings.FilePath);
-        });
-        public static Lazy<XLWorkbook> GroupsActualisationWorkBook { get; set; } = new Lazy<XLWorkbook>(() =>
-        {
-            if (!File.Exists(GroupsFileSettings.FilePath))
-                throw new Exception("Файл \"Актуализация групп\" не найден.");
-            return new XLWorkbook(GroupsFileSettings.FilePath);
-        });
-        
+            if (SettingsWorkBook != null)
+                SettingsWorkBook.Dispose();
+            if (!File.Exists(Program.settingsWorkbookPath))
+            {
+                throw new Exception("Систесмый файл \"Настройки\" не найден! Его нельзя удалять. Восстановите.");
+            }
+            SettingsWorkBook = new XLWorkbook(Program.settingsWorkbookPath);
+        }
         public static class CommonSettings
         {
             public static void Initialize() { }
-            public static IXLWorksheet CommonSheet { get; set; } = SettingsWorkBook.Worksheets.Single(x => x.Name == "Общие");
+            public static IXLWorksheet AlgorythmSheet => SettingsWorkBook.Worksheet("Алгоритм");
+            public static IXLWorksheet SystemsSheet => SettingsWorkBook.Worksheet("Системное");
             public static int CursorPosition
             {
                 get
                 {
                     if(Algorithm.targetModule == Algorithm.RunModule.Elements)
-                        return Convert.ToInt32(CommonSheet.Range("B3:D10").Search("<=").First().WorksheetRow().Cell("B").Value.ToString());
+                        return Convert.ToInt32(AlgorythmSheet.Range("A3:C7").Search("<=").First().WorksheetRow().Cell("A").Value);
                     if (Algorithm.targetModule == Algorithm.RunModule.Propertyes)
-                        return Convert.ToInt32(CommonSheet.Range("B12:D20").Search("<=").First().WorksheetRow().Cell("B").Value.ToString());
+                        return Convert.ToInt32(AlgorythmSheet.Range("A9:C14").Search("<=").First().WorksheetRow().Cell("A").Value);
                     /*if (Algorithm.targetModule == Algorithm.RunModule.Concepts)
-                        return Convert.ToInt32(CommonSheet.Range("B12:D20").Search("<=").First().WorksheetRow().Cell("B").Value.ToString());*/
+                        return Convert.ToInt32(AlgorythmSheet.Range("B12:D20").Search("<=").First().WorksheetRow().Cell("B").Value.ToString());*/
                     return 0;
                 }
                 set
                 {
                     IXLRange range = null;
-                    if (Algorithm.targetModule == Algorithm.RunModule.Elements) range = CommonSheet.Range("B3:D10");
-                    if (Algorithm.targetModule == Algorithm.RunModule.Propertyes) range = CommonSheet.Range("B12:D20");
-                    /*if (Algorithm.targetModule == Algorithm.RunModule.Concepts) range = CommonSheet.Range("B3:D10");*/
+                    if (Algorithm.targetModule == Algorithm.RunModule.Elements) 
+                        range = AlgorythmSheet.Range("A3:C7");
+                    if (Algorithm.targetModule == Algorithm.RunModule.Propertyes) 
+                        range = AlgorythmSheet.Range("A9:C14");
+                    /*if (Algorithm.targetModule == Algorithm.RunModule.Concepts) range = AlgorythmSheet.Range("B3:D10");*/
 
                     range.Search("<=").Value = "";
-                    range.Search(value.ToString()).Single(x => Convert.ToInt32(x.Value) == value).WorksheetRow().Cell("D").Value = "<="; // костыль. Берет 10 и 1, если ищешь 1.
+                    range.Search(value.ToString()).Single(x => Convert.ToInt32(x.Value) == value).WorksheetRow().Cell("C").Value = "<="; // костыль. Берет 10 и 1, если ищешь 1.
                     SettingsWorkBook.Save();
                 }
             }
-            public static string TCSConnectionString { get; } = new Func<string>(() =>
+            public static string ConnectionString { get; } = new Func<string>(() =>
             {
-                return CommonSheet.Search("Строка подключения").First().CellRight().Value.ToString();
+                return SystemsSheet.Search("Строка подключения").First().CellRight().Value.ToString();
             }).Invoke();
         }
-        public static class ElementsFileSettings
+        public static class ElementsSettings
         {
             public static void Initialize()
             {
-                Types = new Func<List<string>>(() =>
+                List<IXLCell> vklCells = Sheet.Search("Вкл").ToList();
+                vklCells.RemoveAt(0);
+                if(vklCells.Count == 0)
+                    throw new Exception("Зайдайте хотя бы одной переносимной группе статус \"Вкл\".");
+
+                Types = vklCells.Select(x => x.WorksheetRow().Cell("A").Value.ToString()).ToList();
+                TypesTranslit = new Func<List<(string, string)>>(() =>
                 {
-                    List<string> types = new List<string>();
-                    foreach (var startSell in ElementActualsationSheet.Search("вкл"))
+                    List<(string type, string translit)> typesTranslit = new List<(string, string)>();
+                    foreach (var vklCell in vklCells)
                     {
-                        types.Add(startSell.CellLeft(3).Value.ToString());
-                    }
-                    return types;
-                }).Invoke();
-                TypesTranslit = new Func<Dictionary<string, string>>(() =>
-                {
-                    Dictionary<string, string> typesTranslit = new Dictionary<string, string>();
-                    foreach (var startSell in ElementActualsationSheet.Search("вкл"))
-                    {
-                        var name = startSell.CellLeft(3).Value.ToString();
-                        var translit = startSell.CellLeft(2).Value.ToString();
-                        typesTranslit.Add(name, translit);
+                        var row = vklCell.WorksheetRow();
+                        typesTranslit.Add((row.Cell("A").Value.ToString(), row.Cell("B").Value.ToString()));
                     }
                     return typesTranslit;
                 }).Invoke();
-                TypesDef = new Func<Dictionary<string, string>>(() =>
+                TypesCode = new Func<List<(string, string)>>(() =>
                 {
-                    Dictionary<string, string> typesDef = new Dictionary<string, string>();
-                    foreach (var startSell in ElementActualsationSheet.Search("вкл"))
+                    List<(string type, string typeCode)> typesCode = new List<(string, string)>();
+                    foreach (var vklCell in vklCells)
                     {
-                        var name = startSell.CellLeft(3).Value.ToString();
-                        var def = startSell.CellLeft(1).Value.ToString();
-                        typesDef.Add(name, def);
+                        var row = vklCell.WorksheetRow();
+                        typesCode.Add((row.Cell("A").Value.ToString(), row.Cell("C").Value.ToString()));
                     }
-                    return typesDef;
+                    return typesCode;
                 }).Invoke();
-                FilePath = Path.Combine(AppDir, "Актуализация элементов.xlsx");
-                ArchivePath = Path.Combine(AppDir, $"Архив актуализация элементов\\Актуализация элементов-{(int)DateTime.Now.Ticks}.xlsx");
-                TcsByPolynomTypes = new Func<Dictionary<string, List<string>>>(() =>
+                TypePolynomPaths = new Func<Dictionary<string, List<string>>>(() =>
                 {
-                    Dictionary<string, List<string>> tcsToPolynomTypes = new Dictionary<string, List<string>>();
-                    foreach (var pair in Types)
+                    Dictionary<string, List<string>> typePolynomPaths = new Dictionary<string, List<string>>();
+                    foreach (var vklCell in vklCells)
                     {
-                        List<string> plynomGroups = new List<string>();
-                        var cell = ElementActualsationSheet.Search(pair).First().CellBelow();
-                        int parce;
-                        while (int.TryParse(cell.Value.ToString(), out parce))
+                        var row = vklCell.WorksheetRow();
+
+                        string typeName = row.Cell("A").Value.ToString();
+                        List<string> paths = new List<string>();
+
+                        StringReader reader = new StringReader(row.Cell("D").Value.ToString());
+                        string path;
+                        while ((path = reader.ReadLine()) != null)
                         {
-                            plynomGroups.Add(cell.WorksheetRow().Cell("B").Value.ToString());
-                            cell = cell.CellBelow();
+                            paths.Add(path);
                         }
-                        tcsToPolynomTypes.Add(pair, plynomGroups);
+
+                        typePolynomPaths.Add(typeName, paths);
                     }
-                    return tcsToPolynomTypes;
-                }).Invoke();
-                TcsTypesSQLQueries = new Func<Dictionary<string, string>>(() =>
+                    return typePolynomPaths;
+                }).Invoke(); // Проверить как работает с пустой строкой. Должен быть пустой лист.
+                TypesSQLQueries = new Func<Dictionary<string, string>>(() =>
                 {
                     Dictionary<string, string> tcsTypesSQLQueryes = new Dictionary<string, string>();
-                    
-                    foreach (string tcsType in Types)
+
+                    foreach (string type in Types)
                     {
-                        var subdir = $"Запросы SQL\\{tcsType}.sql";
-                        var fullPath = Path.Combine(AppDir, subdir);
-                        tcsTypesSQLQueryes.Add(tcsType, File.ReadAllText(fullPath));
+                        var subdir = $"Запросы SQL\\{type}.sql";
+                        var fullPath = Path.Combine(Program.appDir, subdir);
+                        tcsTypesSQLQueryes.Add(type, File.ReadAllText(fullPath));
                     }
                     return tcsTypesSQLQueryes;
                 }).Invoke();
             }
-            public static IXLWorksheet ElementActualsationSheet => SettingsWorkBook.Worksheets.Single(x => x.Name == "Актуализатор элементов");
-            public static Dictionary<string, List<string>> TcsByPolynomTypes { get; set; }
-            public static Dictionary<string, string> TcsTypesSQLQueries { get; set; }
+            public static IXLWorksheet Sheet => SettingsWorkBook.Worksheet("Актуализация элементов");
             public static List<string> Types { get; set; }
-            public static Dictionary<string, string> TypesTranslit { get; set; }
-            public static Dictionary<string, string> TypesDef { get; set; }
-            public static ActualisationStatus Status
-            {
-                get
-                {
-                    UpdateSettingsWorkBook();
-                    string status = ElementActualsationSheet.Search("Статус документа").First().CellBelow().Value.ToString();
-                    if (status == "Актуализирован")
-                        return ActualisationStatus.Актуализирован;
-                    else
-                        return ActualisationStatus.Не_актуализирован;
-                }
-                set
-                {
-                    if(value.ToString() == "Актуализирован")
-                        ElementActualsationSheet.Search("Статус документа").First().CellBelow().Value = "Актуализирован";
-                    else
-                        ElementActualsationSheet.Search("Статус документа").First().CellBelow().Value = "Не актуализирован";
-                    SettingsWorkBook.Save();
-                }
-            }
-            public static string FilePath { get; set; }
-            public static string ArchivePath { get; set; }
+            public static List<(string type, string translit)> TypesTranslit { get; set; }
+            public static List<(string type, string typeCode)> TypesCode { get; set; }
+            public static Dictionary<string, List<string>> TypePolynomPaths { get; set; }
+            public static Dictionary<string, string> TypesSQLQueries { get; set; }
         }
-        public static class GroupsFileSettings
+        public static class ElementsFile
         {
             public static void Initialize() { }
-            public static IXLWorksheet GroupActualisationSheet => SettingsWorkBook.Worksheets.Single(x => x.Name == "Актуализатор групп");
-            public static ActualisationStatus Status
+            public static XLWorkbook WorkBook { get; set; }
+            public static IXLWorksheet StatusSheet => WorkBook.Worksheet("Статус");
+            public static ActualisationStatus StatusElements
             {
                 get
                 {
-                    UpdateSettingsWorkBook();
-                    string status = GroupActualisationSheet.Search("Статус документа").First().CellBelow().Value.ToString();
+                    ReconnectWorkBook(false);
+                    string status = StatusSheet.Search("Статус элементов").First().CellBelow().Value.ToString();
                     if (status == "Актуализирован")
                         return ActualisationStatus.Актуализирован;
                     else
@@ -190,16 +171,55 @@ namespace TCS_Polynom_data_actualiser
                 set
                 {
                     if (value.ToString() == "Актуализирован")
-                        GroupActualisationSheet.Search("Статус документа").First().CellBelow().Value = "Актуализирован";
+                        StatusSheet.Search("Статус свойств").First().CellBelow().Value = "Актуализирован";
                     else
-                        GroupActualisationSheet.Search("Статус документа").First().CellBelow().Value = "Не актуализирован";
-                    SettingsWorkBook.Save();
+                        StatusSheet.Search("Статус свойств").First().CellBelow().Value = "Не актуализирован";
+                    WorkBook.Save();
                 }
             }
-            public static string FilePath { get; set; } = Path.Combine(AppDir, "Aктуализация групп.xlsx");
-            public static string ArchivePath { get; set; } = Path.Combine(AppDir, $"Архив актуализация групп\\Актуализация групп{(int)DateTime.Now.Ticks}.xlsx");
+            public static ActualisationStatus StatusGroups
+            {
+                get
+                {
+                    ReconnectWorkBook(false);
+                    string status = StatusSheet.Search("Статус групп").First().CellBelow().Value.ToString();
+                    if (status == "Актуализирован")
+                        return ActualisationStatus.Актуализирован;
+                    else
+                        return ActualisationStatus.Не_актуализирован;
+                }
+                set
+                {
+                    if (value.ToString() == "Актуализирован")
+                        StatusSheet.Search("Статус групп").First().CellBelow().Value = "Актуализирован";
+                    else
+                        StatusSheet.Search("Статус групп").First().CellBelow().Value = "Не актуализирован";
+                    WorkBook.Save();
+                }
+            }
+            public static string FilePath { get; set; } = Path.Combine(Program.appDir, "Актуализация элементов.xlsx");
+            public static string ArchivePath { get; set; } = Path.Combine(Program.appDir, $"Архив актуализация элементов\\Актуализация элементов-{(int)DateTime.Now.Ticks}.xlsx");
+            public static void ReconnectWorkBook(bool createIfNotExists)
+            {
+                if(WorkBook != null)
+                    WorkBook.Dispose();
+                bool exists = File.Exists(FilePath);
+                if (!exists)
+                {
+                    if (createIfNotExists)
+                    {
+                        WorkBook = new XLWorkbook();
+                        return;
+                    }
+                    else
+                    {
+                        throw new Exception("Файл \"Актуализация элементов\" не найден.");
+                    }
+                }
+                WorkBook = new XLWorkbook(FilePath);
+            }
         }
-        public static class PropertiesSettings
+        public static class PropertiesFile
         {
             public static void Initialize() { }
             public static Lazy<XLWorkbook> WorkBook { get; set; } = new Lazy<XLWorkbook>(() =>
@@ -208,14 +228,13 @@ namespace TCS_Polynom_data_actualiser
                     throw new Exception("Файл \"Актуализация свойств\" не найден.");
                 return new XLWorkbook(FilePath);
             });
-            public static IXLWorksheet PropertyesSheet => WorkBook.Value.Worksheets.Single(x => x.Name == "Свойства");
-            public static IXLWorksheet StatusSheet => WorkBook.Value.Worksheets.Single(x => x.Name == "Статус");
-            public static string TcsPropertyesSQLQuery { get; set; } = File.ReadAllText(Path.Combine(AppDir, $"Запросы SQL\\Свойства.sql"));
+            public static IXLWorksheet PropertiesSheet => WorkBook.Value.Worksheets.Worksheet("Свойства");
+            public static IXLWorksheet StatusSheet => WorkBook.Value.Worksheet("Статус");
             public static ActualisationStatus StatusProperties
             {
                 get
                 {
-                    UpdateWorkBook();
+                    ReconnectWorkBook();
                     string status = StatusSheet.Search("Статус свойств").First().CellBelow().Value.ToString();
                     if (status == "Актуализирован")
                         return ActualisationStatus.Актуализирован;
@@ -235,7 +254,7 @@ namespace TCS_Polynom_data_actualiser
             {
                 get
                 {
-                    UpdateWorkBook();
+                    ReconnectWorkBook();
                     string status = StatusSheet.Search("Статус групп").First().CellBelow().Value.ToString();
                     if (status == "Актуализирован")
                         return ActualisationStatus.Актуализирован;
@@ -251,9 +270,10 @@ namespace TCS_Polynom_data_actualiser
                     WorkBook.Value.Save();
                 }
             }
-            public static string FilePath { get; set; } = Path.Combine(AppDir, "Актуализация свойств.xlsx");
-            public static string ArchivePath { get; set; } = Path.Combine(AppDir, $"Архив актуализация свойств\\Актуализация свойств-{(int)DateTime.Now.Ticks}.xlsx");
-            public static void UpdateWorkBook()
+            public static string PropertyesSQLQuery { get; set; } = File.ReadAllText(Path.Combine(Program.appDir, $"Запросы SQL\\Свойства.sql"));
+            public static string FilePath { get; set; } = Path.Combine(Program.appDir, "Актуализация свойств.xlsx");
+            public static string ArchivePath { get; set; } = Path.Combine(Program.appDir, $"Архив актуализация свойств\\Актуализация свойств-{(int)DateTime.Now.Ticks}.xlsx");
+            public static void ReconnectWorkBook()
             {
                 if (!File.Exists(FilePath))
                     throw new Exception("Файл \"Актуализация свойств\" не найден.");
@@ -264,15 +284,12 @@ namespace TCS_Polynom_data_actualiser
                 });
             }
         }
-        public static class ImportFileSettings
+        public static class _ImportFile
         {
             public static void Initialize() { }
-            public static string FilePath { get; set; } = Path.Combine(AppDir, "Файл импорта.xlsx");
-            public static string ArchivePath { get; set; } = Path.Combine(AppDir, $"Архив файл импорта\\Файл импорта-{(int)DateTime.Now.Ticks}.xlsx");
-        }
-        public static void UpdateSettingsWorkBook()
-        {
-            SettingsWorkBook = new XLWorkbook(Program.settingsWorkbookPath);
+            public static XLWorkbook WorkBook { get; set; }
+            public static string FilePath { get; set; } = Path.Combine(Program.appDir, "Файл импорта.xlsx");
+            public static string ArchivePath { get; set; } = Path.Combine(Program.appDir, $"Архив файл импорта\\Файл импорта-{(int)DateTime.Now.Ticks}.xlsx");
         }
     }
 }

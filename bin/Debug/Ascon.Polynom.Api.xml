@@ -13831,6 +13831,13 @@
             <param name="positionId">Идентификатор.</param>
             <returns>Должность с заданным идентификатором.</returns>
         </member>
+        <member name="M:Ascon.Polynom.Api.ISecurityManager.GetUserAccounts(Ascon.Polynom.Api.UserAccount)">
+            <summary>
+            Возвращает все аккаунты всех зарегистрированных в ПОЛИНОМ пользователей.
+            </summary>
+            <param name="userAccount">Аккаунт пользователя.</param>
+            <returns>Аккаунты зарегистрированных пользователей.</returns>
+        </member>
         <member name="T:Ascon.Polynom.Api.ISecurityTree">
             <summary>
             Дерево безопасности.
@@ -15750,7 +15757,7 @@
             </summary>
             <param name="connection">Подключение.</param>
         </member>
-        <member name="M:Ascon.Polynom.Api.Factories.SessionFactoryImpl.Create(Ascon.Polynom.Api.UserAccount,Ascon.Polynom.Api.ISessionDefinition,Ascon.Polynom.Api.ConnectionInfo@,Ascon.Polynom.Api.SessionOptions,Ascon.Polynom.Api.ClientType,System.Boolean)">
+        <member name="M:Ascon.Polynom.Api.Factories.SessionFactoryImpl.Create(Ascon.Polynom.Api.UserAccount,Ascon.Polynom.Api.ISessionDefinition,Ascon.Polynom.Api.ConnectionInfo@,Ascon.Polynom.Api.SessionOptions,Ascon.Polynom.Api.ClientType,System.Boolean,System.String)">
             <summary>
             Создает экземпляр сессии с открытым объектным пространством.
             </summary>
@@ -15760,6 +15767,7 @@
             <param name="sessionOptions">Опции сессии.</param>
             <param name="clientType">Тип клиента.</param>
             <param name="rememberMe">Запомнить меня.</param>
+            <param name="deltaId"></param>
         </member>
         <member name="M:Ascon.Polynom.Api.Factories.SessionFactoryImpl.Create(Ascon.Polynom.Api.ConnectionInfo@,System.String,System.Boolean,System.String,System.String,System.Boolean)">
             <summary>

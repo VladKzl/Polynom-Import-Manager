@@ -3,20 +3,20 @@ using System.Data;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
-using static TCS_Polynom_data_actualiser.AppBase;
+using static Polynom_Import_Manager.AppBase;
 using System.Collections;
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using DocumentFormat.OpenXml.Office2010.ExcelAc;
 
-namespace TCS_Polynom_data_actualiser
+namespace Polynom_Import_Manager
 {
     public class TCSBase
     {
         public TCSBase()
         {
-            TCSConnection = new SqlConnection(CommonSettings.TCSConnectionString);
+            TCSConnection = new SqlConnection(CommonSettings.ConnectionString);
             TCSConnection.Open();
         }
         public static SqlConnection TCSConnection { get; set; }
@@ -25,45 +25,32 @@ namespace TCS_Polynom_data_actualiser
             static Elements()
             {
                 Console.WriteLine("Получаем элементы из Tcs. Подождите..");
-                ElementsNameByTcsType = new Func<Dictionary<string, List<string>>>(() =>
+
+                ElementAndPathByTcsType = new Func<Dictionary<string, List<(string element, string path)>>>(() =>
                 {
-                    var elementsNamesByType = new Dictionary<string, List<string>>();
-                    foreach (var queryPair in ElementsFileSettings.TcsTypesSQLQueries)
+                    var elementAndGroupByTcsType = new Dictionary<string, List<(string element, string group)>>();
+                    foreach (var queryPair in ElementsSettings.TypesSQLQueries)
                     {
                         SqlCommand tcsCommand = new SqlCommand(queryPair.Value, TCSConnection);
                         SqlDataReader reader = tcsCommand.ExecuteReader();
 
-                        List<string> names = new List<string>();
+                        var names = new List<(string, string)>();
                         while (reader.Read())
                         {
-                            names.Add((string)reader.GetValue(0));
+                            var element = reader.GetValue(0).ToString();
+                            var group = reader.GetValue(1).ToString();
+                            names.Add((element, group));
                         }
-                        elementsNamesByType.Add(queryPair.Key, names);
+                        elementAndGroupByTcsType.Add(queryPair.Key, names);
                         reader.Close();
                         Console.WriteLine($"- Получили {queryPair.Key} из ТКС");
                     }
-                    return elementsNamesByType;
-                }).Invoke();
-                AllTypesElementAndGroupNames = new Func<List<(string elementName, string groupName)>>(() =>
-                {
-                    var elementsNamesByType = new List<(string elementName, string groupName)>();
-                    foreach (var queryPair in ElementsFileSettings.TcsTypesSQLQueries)
-                    {
-                        SqlCommand tcsCommand = new SqlCommand(queryPair.Value, TCSConnection);
-                        SqlDataReader reader = tcsCommand.ExecuteReader();
+                    return elementAndGroupByTcsType;
+                }).Invoke(); // вроде как нужно фильтрануть по element и path
 
-                        while (reader.Read())
-                        {
-                            elementsNamesByType.Add(((string)reader.GetValue(0), (string)reader.GetValue(1)));
-                        }
-                        reader.Close();
-                    }
-                    return elementsNamesByType;
-                }).Invoke();
                 Console.WriteLine("Получили элементы из Tcs.\n");
             }
-            public static Dictionary<string, List<string>> ElementsNameByTcsType { get; set; }
-            public static List<(string elementName, string groupName)> AllTypesElementAndGroupNames { get; set; }
+            public static Dictionary<string, List<(string element, string path)>> ElementAndPathByTcsType { get; set; }
         }
         public class Propertyes
         {
@@ -80,7 +67,7 @@ namespace TCS_Polynom_data_actualiser
             {
                 Console.WriteLine("Получаем свойства из Tcs. Подождите..");
 
-                SqlCommand tcsCommand = new SqlCommand(PropertiesSettings.TcsPropertyesSQLQuery, TCSConnection);
+                SqlCommand tcsCommand = new SqlCommand(PropertiesFile.PropertyesSQLQuery, TCSConnection);
                 SqlDataReader reader = tcsCommand.ExecuteReader();
                 DataTable table = new DataTable();
                 table.Load(reader);
@@ -93,7 +80,7 @@ namespace TCS_Polynom_data_actualiser
                     foreach(var propRow in propRowsDistincted)
                     {
                         string propName = propRow.Field<string>("NAME");
-                        List<string> splitPath = GetSplitPath(propRow.Field<string>("FOLDER"));
+                        List<string> splitPath = CommonCode.GetSplitPath(propRow.Field<string>("FOLDER"));
                         propertyAndSplitPath.Add((propName, splitPath));
                     }
                     return propertyAndSplitPath;
@@ -119,20 +106,14 @@ namespace TCS_Polynom_data_actualiser
                     }
                     return propertys;
                 }).Invoke();
+
                 Console.WriteLine("Получили свойства из Tcs.\n");
             }
             public static List<DataRow> PropertiesRows { get; set; }
             public static List<(string prop, List<string> splitPath)> PropertiesAndSplitPath { get; set; }
             public static List<(string prop, string path)> PropertiesAndPath { get; set; }
             public static List<string> PropertiesNames { get; set; }
-            public static List<string> GetSplitPath(string path)
-            {
-                return path.Split('/').ToList();
-            }
-            public static string GetPropGroupFromPath(string path)
-            {
-                return path.Split('/').ToList().Last();
-            }
+
             public static T GetColumnValueFromPropRows<T>(string propName, string propPath, RowColumnsForSearch searchedColumn)
             {
                 var row = PropertiesRows.Single(x => x.Field<string>("NAME") == propName && x.Field<string>("FOLDER") == propPath);

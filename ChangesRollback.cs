@@ -7,15 +7,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using static TCS_Polynom_data_actualiser.AppBase;
+using static Polynom_Import_Manager.AppBase;
 
-namespace TCS_Polynom_data_actualiser
+namespace Polynom_Import_Manager
 {
     public class ChangesRollback
     {
         public static void AllRolbacks()
         {
-            Console.WriteLine($"Выберите изменения какого документа откатываем. Ведите 1 или 2. \n" +
+/*            Console.WriteLine($"Выберите изменения какого документа откатываем. Ведите 1 или 2. \n" +
                 $"1 - Откат изменений текущего документа \n" +
                 $"2 - Откат изменений документа из архива");
             switch(Console.ReadLine())
@@ -29,13 +29,13 @@ namespace TCS_Polynom_data_actualiser
                 default:
                     Console.WriteLine("Не вернный выбор.");
                     break;
-            }
+            }*/
         }
-        public static void CurrentDocumentRollback()
+        /*        public static void CurrentDocumentRollback()
         {
             Console.WriteLine("Начали откат");
             ITransaction transaction = PolynomBase.Session.Objects.StartTransaction();
-            foreach (string type in ElementsFileSettings.Types)
+            foreach (string type in ElementsFile.Types)
             {
                 var workSheet = ElementsActualisationWorkBook.Value.Worksheet(type);
                 // Так как исапольузется Range то буквы колонок меняются на A,B,C и тд.
@@ -55,12 +55,12 @@ namespace TCS_Polynom_data_actualiser
         public static void ArchiveDocumentRollback()
         {
             Console.WriteLine($"Введите путь до файла элементов из архива\n" +
-                @"К примеру: D:\ascon_obmen\kozlov_vi\Полином\Приложения\TCS_Polynom_data_actualiser\Архив Актуализация элементов\Актуализация элементов-1191953373.xlsx");
+                @"К примеру: D:\ascon_obmen\kozlov_vi\Полином\Приложения\Polynom_Import_Manager\Архив Актуализация элементов\Актуализация элементов-1191953373.xlsx");
             string path = Console.ReadLine();
 
             Console.WriteLine("Начали откат");
             ITransaction transaction = PolynomBase.Session.Objects.StartTransaction();
-            foreach (string type in ElementsFileSettings.Types)
+            foreach (string type in ElementsFile.Types)
             {
                 XLWorkbook archiveBook = new XLWorkbook(path);
                 var workSheet = archiveBook.Worksheet(type);
@@ -105,6 +105,6 @@ namespace TCS_Polynom_data_actualiser
             { 
                 Console.WriteLine($"Root группу {groupName} не удалось удалить, так как она не была найдена.");
             }
-        }
+        }*/
     }
 }

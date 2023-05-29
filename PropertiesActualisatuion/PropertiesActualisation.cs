@@ -6,9 +6,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static TCS_Polynom_data_actualiser.AppBase;
+using static Polynom_Import_Manager.AppBase;
 
-namespace TCS_Polynom_data_actualiser
+namespace Polynom_Import_Manager
 {
     internal class PropertiesActualisation
     {
@@ -16,8 +16,8 @@ namespace TCS_Polynom_data_actualiser
         private static IXLWorksheet Worksheet { get; set; }
         public static void CreateAndFillElementsDocument()
         {
-            if (File.Exists(PropertiesSettings.FilePath))
-                File.Move(PropertiesSettings.FilePath, PropertiesSettings.ArchivePath);
+            if (File.Exists(PropertiesFile.FilePath))
+                File.Move(PropertiesFile.FilePath, PropertiesFile.ArchivePath);
             CreateDocAndSheets();
 
             Worksheet = NewPropertiesActualisationWorkBook.Worksheet("Свойства");
@@ -25,7 +25,7 @@ namespace TCS_Polynom_data_actualiser
 
             using (NewPropertiesActualisationWorkBook)
             {
-                NewPropertiesActualisationWorkBook.SaveAs(PropertiesSettings.FilePath);
+                NewPropertiesActualisationWorkBook.SaveAs(PropertiesFile.FilePath);
             }
 
             void CreateDocAndSheets()
@@ -44,15 +44,12 @@ namespace TCS_Polynom_data_actualiser
                 propertiesSheet.Cell(1, "A").CreateComment().AddText("");
                 propertiesSheet.Cell(1, "B").Value = "В TCS есть в Полиноме нет";
                 propertiesSheet.Cell(1, "B").CreateComment().AddText("");
-                propertiesSheet.Cell(1, "C").Value = "Группы TCS";
+                propertiesSheet.Cell(1, "C").Value = "Расположение TCS";
                 propertiesSheet.Cell(1, "C").CreateComment().AddText("");
-                propertiesSheet.Cell(1, "D").Value = "Группы Полином";
+                propertiesSheet.Cell(1, "D").Value = "Предлагаемые расположения в Полином";
                 propertiesSheet.Cell(1, "D").CreateComment().AddText("");
-                propertiesSheet.Cell(1, "E").Value = "Ручная валидация";
-                propertiesSheet.Cell(1, "E").CreateComment().AddText
-                (
-                    ""
-                );
+                propertiesSheet.Cell(1, "E").Value = "Номер выбранного расположения"; ;
+                propertiesSheet.Cell(1, "E").CreateComment().AddText("");
                 propertiesSheet.Cell(1, "F").Value = "В TCS нет в Полиноме есть";
                 propertiesSheet.Cell(1, "F").CreateComment().AddText("");
                 propertiesSheet.Cell(1, "G").Value = $"Все свойства в Полином";

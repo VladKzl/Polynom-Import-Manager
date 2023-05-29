@@ -5,7 +5,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TCS_Polynom_data_actualiser
+namespace Polynom_Import_Manager
 {
     public static class CommonCode
     {
@@ -62,6 +62,14 @@ namespace TCS_Polynom_data_actualiser
             }
             while (userAction != "+");
             return true;
+        }
+        public static List<string> GetSplitPath(string path)
+        {
+            return path.Split('/').ToList();
+        }
+        public static string GetLastGroupFromPath(string path)
+        {
+            return path.Split('/').ToList().Last();
         }
     }
 }

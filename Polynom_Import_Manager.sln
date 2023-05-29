@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33103.184
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TCS_Polynom_data_actualiser", "TCS_Polynom_data_actualiser.csproj", "{74A13A1B-1276-4418-B7BF-141A815627D7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Polynom_Import_Manager", "Polynom_Import_Manager.csproj", "{74A13A1B-1276-4418-B7BF-141A815627D7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -8,9 +8,9 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using static TCS_Polynom_data_actualiser.AppBase;
+using static Polynom_Import_Manager.AppBase;
 
-namespace TCS_Polynom_data_actualiser
+namespace Polynom_Import_Manager
 {
     public class PropertyesGroupsActualisation
     {
@@ -24,7 +24,7 @@ namespace TCS_Polynom_data_actualiser
 
             for (int i = 0; i < extractedGroups.Count(); i++)
             {    
-                var propRows = PropertiesSettings.PropertyesSheet.RowsUsed().ToList();
+                var propRows = PropertiesFile.PropertiesSheet.RowsUsed().ToList();
                 string propGroupName = extractedGroups[i];
                 List<IPropDefGroup> propPossibleGroups = polynomPropGroups.Where(x => x.Name == propGroupName).ToList();
 
@@ -63,7 +63,7 @@ namespace TCS_Polynom_data_actualiser
                 }
             }
 
-            PropertiesSettings.WorkBook.Value.Save();
+            PropertiesFile.WorkBook.Value.Save();
 
             void GetGroupFromAllPropertyes()
             {
@@ -79,7 +79,7 @@ namespace TCS_Polynom_data_actualiser
             void ExtractGroupFromPaths()
             {
                 List<string> propPaths = new List<string>();
-                var pathsCells = PropertiesSettings.PropertyesSheet.Column("C").CellsUsed().ToList();
+                var pathsCells = PropertiesFile.PropertiesSheet.Column("C").CellsUsed().ToList();
                 pathsCells.RemoveRange(0, 1);
                 propPaths = pathsCells.Select(x => x.Value.ToString()).ToList();
 

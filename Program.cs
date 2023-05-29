@@ -6,17 +6,19 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static TCS_Polynom_data_actualiser.PolynomBase;
-using static TCS_Polynom_data_actualiser.ElementsActualisation;
+using static Polynom_Import_Manager.PolynomBase;
+using static Polynom_Import_Manager.ElementsActualisation;
 using DocumentFormat.OpenXml.Spreadsheet;
-using static TCS_Polynom_data_actualiser.Algorithm;
+using static Polynom_Import_Manager.Algorithm;
 using Ascon.Polynom.Api;
+using System.Reflection;
 
-namespace TCS_Polynom_data_actualiser
+namespace Polynom_Import_Manager
 {
     public class Program
     {
-        public static string settingsWorkbookPath = "D:\\ascon_obmen\\kozlov_vi\\Полином\\Приложения\\TCS_Polynom_data_actualiser\\Настройки.xlsx";
+        public static string settingsWorkbookPath = "D:\\ascon_obmen\\kozlov_vi\\Полином\\Приложения\\Polynom Import Manager\\Настройки.xlsx";
+        public static string appDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location).Replace("\\bin\\Debug", "");
         public static TCSBase TcsBase { get; set;  }
         public static PolynomBase PolynomBase { get; set; }
         //public static string Role = "Администраторы";
@@ -32,11 +34,14 @@ namespace TCS_Polynom_data_actualiser
                 Console.WriteLine
                 (
                     "\nВыберите номер режима импорта в Полином.\n" +
-                    "1 - Импорт элементов и групп через API\n" +
-                    "2 - Импорт свойств и групп через API\n" +
-                    "3 - Импорт элементов и групп через обменный файл\n" +
-                    "4 - Импорт свойств и групп через обменный файл\n" +
-                    "5 - Откат изменений"
+                    "Через Api\n" +
+                    "   1 - Элементы и их группы\n" +
+                    "   2 - Свойства и их группы\n" +
+                    "Через файл импорта\n" +
+                    "   3 - Элементы и их группы\n" +
+                    "   4 - Свойства и их группы\n" +
+                    "Прочее\n" +
+                    "   5 - Откат изменений"
                 );
                 
                 switch (Convert.ToInt32(Console.ReadLine()))

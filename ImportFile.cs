@@ -7,143 +7,26 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+using static Polynom_Import_Manager.AppBase;
 
-namespace TCS_Polynom_data_actualiser
+namespace Polynom_Import_Manager
 {
     public class ImportFile
     {
         public enum Sheets
         {
-            Propertyes,
-            Сoncepts
-        }
-        public static void AddGroupsAndElements()
-        {
-            XLWorkbook ImportFileWorkBook = new XLWorkbook();
-            CreateDoc();
-
-            foreach (string type in AppBase.ElementsFileSettings.Types)
-            {
-                var workSheet = ImportFileWorkBook.Worksheet(type);
-
-                var elementAndGroupPairs = PolynomElementsCreation.CreatedElementAndGroupByTcsType[type];
-                for (int i = 0; i < elementAndGroupPairs.Count(); i++)
-                {
-                    string referenceName = elementAndGroupPairs[i].group.ParentCatalog.Reference.Name;
-                    string catalogName = elementAndGroupPairs[i].group.ParentCatalog.Name;
-                    List<string> groupsNames = GetGroups();
-                    string elementName = elementAndGroupPairs[i].element.Name;
-                    FillRowData();
-
-                    List<string> GetGroups()
-                    {
-                        List<string> groups = new List<string>();
-                        IGroup groupToAdd = elementAndGroupPairs[i].group;
-                        groups.Add(groupToAdd.Name);
-                        while (groupToAdd.ParentGroup != null)
-                        {
-                            groups.Add(groupToAdd.ParentGroup.Name);
-                            groupToAdd = groupToAdd.ParentGroup;
-                        }
-                        groups.Reverse();
-                        return groups;
-                    }
-                    void FillRowData()
-                    {
-                        int elementNameGorisontalSellPosition = 0;
-                        var nextRow = workSheet.Row(i+2);
-
-                        nextRow.Cell("C").Value = referenceName;
-                        nextRow.Cell("D").Value = catalogName;
-                        FillGroupsData();
-                        nextRow.Cell(elementNameGorisontalSellPosition).Value = elementName;
-
-                        void FillGroupsData()
-                        {
-                            for (int n = 0; n < groupsNames.Count(); n++)
-                            {
-                                int gorisontalCellPosition = n + 5;
-                                nextRow.Cell(gorisontalCellPosition).Value = groupsNames[n];
-                                elementNameGorisontalSellPosition = gorisontalCellPosition + 1;
-                            }
-                        }
-                    }
-                }
-            }
-            FormattingStructure();
-            ImportFileWorkBook.Save();
-
-
-            void CreateDoc()
-            {
-                if (File.Exists(AppBase.ImportFileSettings.FilePath))
-                {
-                    // Если файл слуществует и уже были добалвены страницы ранее, значит создаем новый а старый в архив.
-                    ImportFileWorkBook = new XLWorkbook(AppBase.ImportFileSettings.FilePath);
-                    if (AreWorksheetsExists())
-                    {
-                        File.Move(AppBase.ImportFileSettings.FilePath, AppBase.ImportFileSettings.ArchivePath);
-                        ImportFileWorkBook = new XLWorkbook();
-                        CreateSheets();
-                        ImportFileWorkBook.SaveAs(AppBase.ImportFileSettings.FilePath);
-                        return;
-                    }
-                    // Если файл существует и станицы не были добавлены, то работаем в том же файле.
-                    CreateSheets();
-                    ImportFileWorkBook.Save();
-                }
-                ImportFileWorkBook = new XLWorkbook();
-                CreateSheets();
-                ImportFileWorkBook.SaveAs(AppBase.ImportFileSettings.FilePath);
-
-                void CreateSheets()
-                {
-                    foreach (string type in AppBase.ElementsFileSettings.Types)
-                    {
-                        ImportFileWorkBook.AddWorksheet(type);
-                    }
-                }
-                bool AreWorksheetsExists()
-                {
-                    IXLWorksheet sheet;
-                    if (ImportFileWorkBook.TryGetWorksheet(AppBase.ElementsFileSettings.Types.First(), out sheet))
-                        return true;
-                    return false;
-                }
-            }
-            void FormattingStructure()
-            {
-                foreach (string type in AppBase.ElementsFileSettings.Types)
-                {
-                    var workSheet = ImportFileWorkBook.Worksheet(type);
-                    var rows = workSheet.RangeUsed().Rows();
-                    foreach (var row in rows)
-                    {
-                        string lastCellValue = row.LastCellUsed().Value.ToString();
-                        row.LastCellUsed().Value = "";
-                        row.LastCell().Value = lastCellValue;
-                    }
-
-                    var columnsUsed = workSheet.ColumnsUsed().ToList();
-                    columnsUsed[0].Cell(1).Value = "REFERENCE";
-                    columnsUsed[1].Cell(1).Value = "CATALOGS";
-
-                    for (int i = 2; i < columnsUsed.Count; i++)
-                    {
-                        columnsUsed[i].Cell(1).Value = "GROUP";
-                    }
-                    columnsUsed.Last().Cell(1).Value = "NAME";
-                }
-            }
+            ELEMENTS,
+            PROPERTIES,
+            CONCEPTS
         }
         public static void AddProperties()
         {
-            XLWorkbook ImportFileWorkBook = new XLWorkbook();
-            CreateDoc();
-            var importSheet = ImportFileWorkBook.Worksheet("PROPERTIES");
+            CreateDoc(Sheets.PROPERTIES);
+            PropertiesFile.ReconnectWorkBook();
 
-            var propRows = AppBase.PropertiesSettings.PropertyesSheet.RowsUsed().ToList();
+            var sheet = _ImportFile.WorkBook.Worksheet(Sheets.PROPERTIES.ToString());
+
+            var propRows = PropertiesFile.PropertiesSheet.RowsUsed().ToList();
             propRows.RemoveRange(0, 2);
             var rowsCount = propRows.First().Cell("B").WorksheetColumn().CellsUsed().Count();
 
@@ -160,13 +43,13 @@ namespace TCS_Polynom_data_actualiser
                     string masureetity = TCSBase.Propertyes.GetColumnValueFromPropRows<string>(propName, propPath, TCSBase.Propertyes.RowColumnsForSearch.MEASUREENTITY);
                     string lov = TCSBase.Propertyes.GetColumnValueFromPropRows<string>(propName, propPath, TCSBase.Propertyes.RowColumnsForSearch.LOV);
                     string description = TCSBase.Propertyes.GetColumnValueFromPropRows<string>(propName, propPath, TCSBase.Propertyes.RowColumnsForSearch.DESCRIPTION);
-                    importSheet.Cell(i + 1, "A").Value = propName;
-                    importSheet.Cell(i + 1, "B").Value = code;
-                    importSheet.Cell(i + 1, "C").Value = typeName;
-                    importSheet.Cell(i + 1, "D").Value = masureetity;
-                    importSheet.Cell(i + 1, "E").Value = lov != null ? FormatLov(lov) : "";
-                    importSheet.Cell(i + 1, "F").Value = description;
-                    importSheet.Cell(i + 1, "G").Value = realPath;
+                    sheet.Cell(i + 2, "A").Value = propName;
+                    sheet.Cell(i + 2, "B").Value = code;
+                    sheet.Cell(i + 2, "C").Value = typeName;
+                    sheet.Cell(i + 2, "D").Value = masureetity;
+                    sheet.Cell(i + 2, "E").Value = lov != null ? FormatLov(lov) : "";
+                    sheet.Cell(i + 2, "F").Value = description;
+                    sheet.Cell(i + 2, "G").Value = realPath;
                 }
                 catch
                 {
@@ -192,7 +75,8 @@ namespace TCS_Polynom_data_actualiser
                     return propPath;
                 }       
             }
-            ImportFileWorkBook.Save();
+            _ImportFile.WorkBook.Save();
+
 
             string FormatLov(string lov)
             {
@@ -208,46 +92,165 @@ namespace TCS_Polynom_data_actualiser
                 }
                 return stringBuilder.ToString();
             }
-            void CreateDoc()
+        }
+        public static void AddElements()
+        {
+            CreateDoc(Sheets.ELEMENTS);
+            ElementsFile.ReconnectWorkBook(false);
+
+            foreach (string type in ElementsSettings.Types)
             {
-                if (File.Exists(AppBase.ImportFileSettings.FilePath))
+                var elementsSheet = ElementsFile.WorkBook.Worksheet(type);
+                var importSheet = _ImportFile.WorkBook.Worksheet(type);
+
+                List<IXLRow> rows = elementsSheet.Column("C").CellsUsed().Select(x => x.WorksheetRow()).ToList();
+                rows.RemoveRange(0, 1);
+                for (int i = 0; i < rows.Count; i++)
                 {
-                    // Если файл слуществует и уже были добалвены страницы ранее, значит создаем новый а старый в архив.
-                    ImportFileWorkBook = new XLWorkbook(AppBase.ImportFileSettings.FilePath);
-                    if (AreWorksheetsExists())
+                    string elementName = rows[i].Cell("B").Value.ToString();
+                    string polynomPath = new Func<string>(() =>
                     {
-                        File.Move(AppBase.ImportFileSettings.FilePath, AppBase.ImportFileSettings.ArchivePath);
-                        ImportFileWorkBook = new XLWorkbook();
-                        CreateSheet();
-                        ImportFileWorkBook.SaveAs(AppBase.ImportFileSettings.FilePath);
-                        return;
+                        string path = rows[i].Cell("C").Value.ToString();
+                        string polynomPaths = rows[i].Cell("D").Value.ToString();
+                        int? index = null;
+                        if (rows[i].Cell("E").Value.ToString() != string.Empty)
+                        {
+                            index = Convert.ToInt32(rows[i].Cell("E").Value);
+                        }
+
+                        if (polynomPaths == string.Empty || index == null)
+                        {
+                            return path; 
+                        }
+                        return PolynomBase.GetPolynomPath(polynomPaths, index);
+                    }).Invoke();
+                    List<string> splitPath = CommonCode.GetSplitPath(polynomPath);
+                    string reference = splitPath[0];
+                    string catalog = splitPath[1];
+                    List<string> groups = splitPath.GetRange(2, splitPath.Count - 2);
+
+                    FillRowData();
+
+                    void FillRowData()
+                    {
+                        int elementNameGorisontalSellPosition = 0;
+                        var nextRow = importSheet.Row(i + 2);
+
+                        nextRow.Cell("C").Value = reference;
+                        nextRow.Cell("D").Value = catalog;
+                        FillGroupsData();
+                        nextRow.Cell(elementNameGorisontalSellPosition).Value = elementName;
+
+                        void FillGroupsData()
+                        {
+                            for (int n = 0; n < groups.Count(); n++)
+                            {
+                                int gorisontalCellPosition = n + 5;
+                                nextRow.Cell(gorisontalCellPosition).Value = groups[n];
+                                elementNameGorisontalSellPosition = gorisontalCellPosition + 1;
+                            }
+                        }
                     }
-                    // Если файл существует и станицы не были добавлены, то работаем в том же файле.
+                }
+                FormattingStructure();
+
+                void FormattingStructure()
+                {
+                    var _rows = importSheet.RowsUsed().ToList();
+                    _rows.RemoveRange(0, 1);
+                    var lastCellIndex = importSheet.ColumnsUsed().ToList().Count + 2;
+                    foreach (var _row in _rows)
+                    {
+                        string lastCellValue = _row.LastCellUsed().Value.ToString();
+                        _row.LastCellUsed().Value = "";
+                        _row.Cell(lastCellIndex).Value = lastCellValue;
+                    }
+
+                    var columnsUsed = importSheet.ColumnsUsed().ToList();
+                    columnsUsed[0].Cell(1).Value = "REFERENCE";
+                    columnsUsed[1].Cell(1).Value = "CATALOGS";
+
+                    for (int i = 2; i < columnsUsed.Count; i++)
+                    {
+                        columnsUsed[i].Cell(1).Value = "GROUP";
+                    }
+                    columnsUsed.Last().Cell(1).Value = "NAME";
+                }
+            }
+            _ImportFile.WorkBook.Save();
+        }
+        public static void CreateDoc(Sheets targetSheet)
+        {
+            if (File.Exists(_ImportFile.FilePath))
+            {
+                _ImportFile.WorkBook = new XLWorkbook(_ImportFile.FilePath);
+                // Если файл слуществует и уже были добавлены страницы ранее, значит создаем новый а старый в архив.
+                if (AreWorksheetsExists())
+                {
+                    File.Move(_ImportFile.FilePath, _ImportFile.ArchivePath);
+                    _ImportFile.WorkBook = new XLWorkbook();
                     CreateSheet();
-                    ImportFileWorkBook.Save();
+                    _ImportFile.WorkBook.SaveAs(_ImportFile.FilePath);
                     return;
                 }
-                ImportFileWorkBook = new XLWorkbook();
+                // Если файл существует и станицы не были добавлены, то работаем в том же файле.
                 CreateSheet();
-                ImportFileWorkBook.SaveAs(AppBase.ImportFileSettings.FilePath);
+                _ImportFile.WorkBook.Save();
+                return;
+            }
+            _ImportFile.WorkBook = new XLWorkbook();
+            CreateSheet();
+            _ImportFile.WorkBook.SaveAs(_ImportFile.FilePath);
 
-                void CreateSheet()
+            bool AreWorksheetsExists()
+            {
+                IXLWorksheet sheet;
+                switch (targetSheet)
                 {
-                    var sheet = ImportFileWorkBook.AddWorksheet("PROPERTIES");
-                    sheet.Cell(1, "A").Value = "NAME";
-                    sheet.Cell(1, "B").Value = "CODE";
-                    sheet.Cell(1, "C").Value = "TYPE";
-                    sheet.Cell(1, "D").Value = "MEASUREENTITY";
-                    sheet.Cell(1, "E").Value = "LOV";
-                    sheet.Cell(1, "F").Value = "DESCRIPTION";
-                    sheet.Cell(1, "G").Value = "FOLDER";
-                }
-                bool AreWorksheetsExists()
+                    case Sheets.ELEMENTS:
+                        foreach (var sheetName in ElementsSettings.Types)
+                        {
+                            if (_ImportFile.WorkBook.TryGetWorksheet(sheetName, out sheet))
+                                return true;
+                        }
+                        return false;
+                    case Sheets.PROPERTIES:
+                        if (_ImportFile.WorkBook.TryGetWorksheet(Sheets.PROPERTIES.ToString(), out sheet))
+                            return true;
+                        return false;
+                    default: throw new Exception();
+                        /*                if (targetSheet == Sheets.CONCEPTS)
                 {
                     IXLWorksheet sheet;
-                    if (ImportFileWorkBook.TryGetWorksheet("PROPERTIES", out sheet))
+                    if (_ImportFile.WorkBook.TryGetWorksheet("PROPERTIES", out sheet))
                         return true;
                     return false;
+                }*/
+                }
+
+            }
+            void CreateSheet()
+            {
+                IXLWorksheet sheet;
+                switch (targetSheet)
+                {
+                    case Sheets.ELEMENTS:
+                        foreach (var sheetName in ElementsSettings.Types)
+                        {
+                            _ImportFile.WorkBook.AddWorksheet(sheetName);
+                        }
+                        break;
+                    case Sheets.PROPERTIES:
+                        sheet = _ImportFile.WorkBook.AddWorksheet(Sheets.PROPERTIES.ToString());
+                        sheet.Cell(1, "A").Value = "NAME";
+                        sheet.Cell(1, "B").Value = "CODE";
+                        sheet.Cell(1, "C").Value = "TYPE";
+                        sheet.Cell(1, "D").Value = "MEASUREENTITY";
+                        sheet.Cell(1, "E").Value = "LOV";
+                        sheet.Cell(1, "F").Value = "DESCRIPTION";
+                        sheet.Cell(1, "G").Value = "FOLDER";
+                        break;
+                    default: throw new Exception();
                 }
             }
         }

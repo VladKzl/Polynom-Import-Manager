@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{74A13A1B-1276-4418-B7BF-141A815627D7}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>TCS_Polynom_data_actualiser</RootNamespace>
-    <AssemblyName>TCS_Polynom_data_actualiser</AssemblyName>
+    <RootNamespace>Polynom_Import_Manager</RootNamespace>
+    <AssemblyName>Polynom_Import_Manager</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -85,7 +85,7 @@
     <Compile Include="ChangesRollback.cs" />
     <Compile Include="ImportFile.cs" />
     <Compile Include="ElementsActualisation\PolynomElementsCreation.cs" />
-    <Compile Include="CommonCode.cs" />
+    <Compile Include="Bases\CommonCode.cs" />
     <Compile Include="ElementsActualisation\GroupsActualisation.cs" />
     <Compile Include="ElementsActualisation\ElementsActualisation.cs" />
     <Compile Include="Bases\PolynomBase.cs" />
@@ -96,6 +96,8 @@
     <Compile Include="Bases\TCSBase.cs" />
     <Compile Include="PropertiesActualisatuion\PropertiesActualisation.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="ConceptsActualisation\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

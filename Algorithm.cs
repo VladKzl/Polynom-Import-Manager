@@ -6,9 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
-using static TCS_Polynom_data_actualiser.AppBase;
+using static Polynom_Import_Manager.AppBase;
 
-namespace TCS_Polynom_data_actualiser
+namespace Polynom_Import_Manager
 {
     public static class Algorithm
     {
@@ -75,13 +75,10 @@ namespace TCS_Polynom_data_actualiser
                 {2, new Action(() => Move2_ManualElementsValidation()) },
                 {3, new Action(() => Move3_CreateAndFillGroupsDocument()) },
                 {4, new Action(() => Move4_GroupsValidation()) },
-                {5, new Action(() => Move5_GroupsCreation()) },
-                {6, new Action(() => Move6_ElementsCreation()) }
+                {5, new Action(() => Move5_GroupsAndElementsCreation()) }
             };
             private static void Move1_CreateAndFillElementsDocument()
             {
-                PolynomBase.ElementsActualisation.Initialize();
-
                 string name = "Наполение документа элементами";
                 int cursorPosition = 1;
                 Console.WriteLine($"\tШаг {cursorPosition} - \"{name}\"");
@@ -103,21 +100,23 @@ namespace TCS_Polynom_data_actualiser
 
                 void Validation()
                 {
-                pointer1: Console.WriteLine
-                (
-                "Excel файл \"Актуализация элементов\" создан и ожидает ручной валидации.\n" +
-                "После окончания работы не забудьте в \"Настройки.xlsx\", на странице \"Актуализатор элeментов\" задать статус \"Актуализирован\"."
-                );
+                    pointer1: Console.WriteLine
+                    (
+                    "Excel файл \"Актуализация элементов\" создан и ожидает ручной валидации.\n" +
+                    "После окончания работы c файлом на странице \"Статус\" задайте статус элементов \"Актуализирован\"."
+                    );
                     Console.WriteLine("Если закончили, введите +. Или закройте программу.");
                     CommonCode.UserValidationPlus();
 
-                    if (ElementsFileSettings.Status == ActualisationStatus.Не_актуализирован)
+                    ElementsFile.ReconnectWorkBook(false);
+
+                    if (ElementsFile.StatusElements == ActualisationStatus.Не_актуализирован)
                     {
                         Console.WriteLine("Статус актуализации элементов: \"Не_актуализирован\".Хотите продложить без актуализации?\n");
                         if (!CommonCode.UserValidationPlusOrMinus("да", "нет"))
                             goto pointer1;
                     }
-                    if (ElementsFileSettings.Status == ActualisationStatus.Актуализирован)
+                    if (ElementsFile.StatusElements == ActualisationStatus.Актуализирован)
                         Console.WriteLine("Статус актуализации элементов: \"Актуализирован\".\n");
                 }
             }
@@ -154,62 +153,37 @@ namespace TCS_Polynom_data_actualiser
 
                 void Validation()
                 {
-                pointer2: Console.WriteLine
-                (
-                    "Excel файл \"Актуализация групп\" создан и ожидает ручной валидации.\n" +
-                    "После окончания работы не забудьте в \"Настройки.xlsx\", на странице \"Актуализатор групп\" задать статус \"Актуализирован\"."
-                );
+                    pointer2: Console.WriteLine
+                    (
+                        "Группы в excel файле \"Актуализация элементов\" ожидают ручной валидации.\n" +
+                        "После окончания работы c файлом на странице \"Статус\" задайте статус групп \"Актуализирован\"."
+                    );
                     Console.WriteLine("Если закончили, введите +. Или закройте программу.");
                     CommonCode.UserValidationPlus();
 
-                    if (GroupsFileSettings.Status == ActualisationStatus.Не_актуализирован)
+                    if (ElementsFile.StatusGroups == ActualisationStatus.Не_актуализирован)
                     {
                         Console.WriteLine("Статус актуализации групп: \"Не_актуализирован\".Хотите продложить без актуализации?\n");
                         if (!CommonCode.UserValidationPlusOrMinus("да", "нет"))
                             goto pointer2;
                     }
-                    if (GroupsFileSettings.Status == ActualisationStatus.Актуализирован)
+                    if (ElementsFile.StatusGroups == ActualisationStatus.Актуализирован)
                         Console.WriteLine("Статус актуализации элементов: \"Актуализирован\".\n");
                 }
             }
-            private static void Move5_GroupsCreation()
+            private static void Move5_GroupsAndElementsCreation()
             {
                 string name = "Загрузка групп";
                 int cursorPosition = 5;
                 Console.WriteLine($"\tШаг {cursorPosition} - \"{name}\"");
 
-                PolynomElementsCreation.GroupsCreation();
+                if (runMode == RunMode.API)
+                    PolynomElementsCreation.UseApi();
+                if (runMode == RunMode.ImportFile)
+                    PolynomElementsCreation.UseImportFile();
 
                 Console.WriteLine("Загрузили группы");
                 Move5IsDone = true;
-            }
-            private static void Move6_ElementsCreation()
-            {
-                string name = "Загрузка элементов в группы";
-                int cursorPosition = 6;
-                Console.WriteLine($"\tШаг {cursorPosition} - \"{name}\"");
-
-                if (!Validation()) return;
-
-                if (runMode == RunMode.API)
-                    PolynomElementsCreation.CreationAPI();
-                if (runMode == RunMode.ImportFile)
-                    PolynomElementsCreation.CreationImportFile();
-
-                Console.WriteLine("Загрузили элементы");
-                Move5IsDone = true;
-
-
-                bool Validation()
-                {
-                    if (!Move5IsDone)
-                    {
-                        Console.WriteLine($"{name} невозможно без шага 5 - \"Загрузка групп\".");
-                        CommonSettings.CursorPosition = 4;
-                        return false;
-                    }
-                    return true;
-                }
             }
         }
         public static class PropertyesAlgorithm
@@ -226,8 +200,7 @@ namespace TCS_Polynom_data_actualiser
                 {2, new Action(() => Move2_ManualPropertyesValidation()) },
                 {3, new Action(() => Move3_FillGroups()) },
                 {4, new Action(() => Move4_GroupsValidation()) },
-                {5, new Action(() => Move5_GroupsAndPropertiesCreation()) },
-                {6, new Action(() => Move6_PropertyesCreation()) }
+                {5, new Action(() => Move5_GroupsAndPropertiesCreation()) }
             };
             private static void Move1_CreateAndFillPropertyesDocument()
             {
@@ -246,7 +219,7 @@ namespace TCS_Polynom_data_actualiser
                 int cursorPosition = 2;
 
                 Console.WriteLine($"\tШаг {cursorPosition} - \"{name}\"");
-                PropertiesSettings.UpdateWorkBook();
+                PropertiesFile.ReconnectWorkBook();
                 Validation();
 
                 Move2IsDone = true;
@@ -261,13 +234,13 @@ namespace TCS_Polynom_data_actualiser
                     Console.WriteLine("Если закончили, введите +. Или закройте программу.");
                     CommonCode.UserValidationPlus();
 
-                    if (PropertiesSettings.StatusProperties == ActualisationStatus.Не_актуализирован)
+                    if (PropertiesFile.StatusProperties == ActualisationStatus.Не_актуализирован)
                     {
                         Console.WriteLine("Статус актуализации свойств: \"Не актуализирован\".Хотите продложить без актуализации?\n");
                         if (!CommonCode.UserValidationPlusOrMinus("да", "нет"))
                             goto pointer1;
                     }
-                    if (PropertiesSettings.StatusProperties == ActualisationStatus.Актуализирован)
+                    if (PropertiesFile.StatusProperties == ActualisationStatus.Актуализирован)
                         Console.WriteLine("Статус актуализации свойств: \"Актуализирован\".\n");
                 }
             }
@@ -312,13 +285,13 @@ namespace TCS_Polynom_data_actualiser
                     Console.WriteLine("Если закончили, введите +. Или закройте программу.");
                     CommonCode.UserValidationPlus();
 
-                    if (PropertiesSettings.StatusGroups == ActualisationStatus.Не_актуализирован)
+                    if (PropertiesFile.StatusGroups == ActualisationStatus.Не_актуализирован)
                     {
                         Console.WriteLine("Статус актуализации групп свойств: \"Не актуализирован\".Хотите продложить без актуализации?\n");
                         if (!CommonCode.UserValidationPlusOrMinus("да", "нет"))
                             goto pointer2;
                     }
-                    if (PropertiesSettings.StatusGroups == ActualisationStatus.Актуализирован)
+                    if (PropertiesFile.StatusGroups == ActualisationStatus.Актуализирован)
                         Console.WriteLine("Статус актуализации групп свойств: \"Актуализирован\".\n");
                 }
             }
@@ -335,27 +308,6 @@ namespace TCS_Polynom_data_actualiser
                     PolynomPropertiesCreation.UseImportFile();
 
                 Console.WriteLine("Загрузили группы и свойства");
-                Move5IsDone = true;
-            }
-            private static void Move6_PropertyesCreation()
-            {
-                string name = "Загрузка элементов в группы";
-                int cursorPosition = 6;
-
-                if (!Move5IsDone)
-                {
-                    Console.WriteLine($"{name} невозможно без шага 5 - \"Загрузка групп\".");
-                    CommonSettings.CursorPosition = 4;
-                    return;
-                }
-                Console.WriteLine($"\tШаг {cursorPosition} - \"{name}\"");
-
-                /*if (!UseImportFile)
-                    PolynomObjectsCreation.ElementsCreation();
-                if (UseImportFile)
-                    PolynomObjectsCreation.CreationImportFile();*/
-
-                Console.WriteLine("Загрузили элементы");
                 Move5IsDone = true;
             }
         }

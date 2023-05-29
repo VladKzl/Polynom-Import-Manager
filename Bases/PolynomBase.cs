@@ -14,10 +14,12 @@ using System.Security.AccessControl;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using static TCS_Polynom_data_actualiser.AppBase;
+using static Polynom_Import_Manager.AppBase;
 using Ascon.Polynom.Api;
+using System.Collections;
+using DocumentFormat.OpenXml.Drawing.Charts;
 
-namespace TCS_Polynom_data_actualiser
+namespace Polynom_Import_Manager
 {
     public class PolynomBase
     {
@@ -43,64 +45,143 @@ namespace TCS_Polynom_data_actualiser
             Console.WriteLine($"Сессия \"{session.Id}\" успешно получена.");
             return session;
         }
-        public class ElementsActualisation
+        public class Elements
         {
-            // GroupsByTcsType инициализируется отдельно, так как остальные очень долгие.
-            public static void Initialize()
+            static Elements()
             {
-                Console.WriteLine("Получаем элементы из Полином. Подождите..");
-                FillElementsByTypeAndElementsNamesByTypePropertyes();
-                Console.WriteLine("Получили элементы из Полином.\n");
-            }
-            public static Dictionary<string, List<IGroup>> GroupsByTcsType { get; set; } = new Func<Dictionary<string, List<IGroup>>>(() =>
-            {
-                Dictionary<string, List<IGroup>> groupsByType = new Dictionary<string, List<IGroup>>();
-                foreach (var tcsByPolynomGroupsPair in ElementsFileSettings.TcsByPolynomTypes)
+                TypePolynomPathObjects = new Func<Dictionary<string, ArrayList>>(() =>
                 {
-                    List<IGroup> groups = new List<IGroup>();
-                    foreach (string polynomTypeName in tcsByPolynomGroupsPair.Value)
+                    var typePolynomPathObjects = new Dictionary<string, ArrayList>();
+                    foreach (var type in ElementsSettings.Types)
                     {
-                        IGroup group;
-                        if (!TrySearchGroupInAllReferences(polynomTypeName, out group))
-                            throw new Exception($"Группа(Папка/каталог) \"{polynomTypeName}\" не найдена в Полниноме. Проверьте правильность имени группы/подгруппы Полином.");
-                        groups.Add(group);
-
-                    }
-                    groupsByType.Add(tcsByPolynomGroupsPair.Key, groups);
-                }
-                return groupsByType;
-            }).Invoke();
-            public static Dictionary<string, List<IElement>> ElementsByTcsType { get; set; }
-            public static Dictionary<string, List<string>> ElementsNameByTcsType { get; set; }
-            private static void FillElementsByTypeAndElementsNamesByTypePropertyes()
-            {
-                foreach (var groupsElementsByTypePair in GroupsByTcsType)
-                {
-                    List<IElement> elements = new List<IElement>();
-                    List<string> elementsNames = new List<string>();
-                    foreach (IGroup _group in groupsElementsByTypePair.Value)
-                    {
-                        Console.WriteLine($"- Получаем элементы из группы полинома \"{_group.Name}\". Ожидайте...");
-
-                        List<IElement> findedElements = new List<IElement>();
-                        if (!TrySearchAllElementsInGroup(_group, out findedElements))
+                        List<string> typePaths = ElementsSettings.TypePolynomPaths[type];
+                        if (typePaths.Count == 0) // Если путь не указан в экселе, то у типа value пустой объект
                         {
-                            Console.WriteLine($"В {_group.Name} нет эллементов.");
+                            typePolynomPathObjects.Add(type, new ArrayList());
                             continue;
                         }
-                        List<string> _elementsNames = findedElements.Select(element => element.Name).ToList();
-                        elements.AddRange(findedElements);
-                        elementsNames.AddRange(_elementsNames);
+                        List<List<string>> splitedPaths = new List<List<string>>();
+                        foreach (var typePath in typePaths)
+                        {
+                            splitedPaths.Add(CommonCode.GetSplitPath(typePath));
+                        }
+                        // Получаем конечные объекты path для типа
+                        ArrayList arrayList = new ArrayList();
+                        foreach (List<string> splitedPath in splitedPaths)
+                        {
+                            arrayList.Add(GetLastGroupOrCatalogFromPath(splitedPath));
+                        }
+                        typePolynomPathObjects.Add(type, arrayList);
 
-                        Console.WriteLine($"-- Получили {findedElements.Count} шт.");
+
+                        object GetLastGroupOrCatalogFromPath(List<string> splitedPath)
+                        {
+                            if (splitedPath.Count == 1)
+                                throw new Exception($"Путь до элементов полинома от \"{type}\" должен заканчиваться не справочником, а каталогом или группой.");
+
+                            string referenceName = splitedPath[0];
+                            string catalogName = splitedPath[1];
+                            List<string> groupNames = splitedPath.Count >= 3 ? splitedPath.GetRange(2, splitedPath.Count - 2) : null;
+
+                            IReference referenceObject = null;
+                            ICatalog catalogObject = null;
+
+                            // Ищем справочник
+                            if (!Session.Objects.AllReferences.Any(x => x.Name == referenceName))
+                                throw new Exception($"Справочника \"{referenceName}\" не существует. Проверьте путь типа \"{type}\".");
+                            referenceObject = Session.Objects.AllReferences.Single(x => x.Name == referenceName);
+                            // Ищем каталог
+                            if (!referenceObject.Catalogs.Any(x => x.Name == catalogName))
+                                throw new Exception($"Каталога \"{catalogName}\" не существует. Проверьте путь типа \"{type}\".");
+                            catalogObject = referenceObject.Catalogs.Single(x => x.Name == catalogName);
+
+                            if (splitedPath.Count == 2)
+                            {
+                                return catalogObject;
+                            }
+                            if (splitedPath.Count >= 3)
+                            {
+                                return GetLastGroupFromPath();
+                            }
+                            return null;
+
+
+                            IGroup GetLastGroupFromPath()
+                            {
+                                IGroup groupObj = null;
+                                foreach (var groupName in groupNames)
+                                {
+                                    if (groupObj == null)
+                                    {
+                                        if (!catalogObject.Groups.Any(x => x.Name == groupName))
+                                            throw new Exception($"Группы \"{groupName}\" не существует в каталоге \"{catalogName}\". Проверьте путь типа \"{type}\".");
+                                        groupObj = catalogObject.Groups.Single(x => x.Name == groupName);
+                                        continue;
+                                    }
+                                    if (!groupObj.Groups.Any(x => x.Name == groupName))
+                                        throw new Exception($"Группы \"{groupName}\" не существует в группе \"{groupObj.Name}\". Проверьте путь типа \"{type}\".");
+                                    groupObj = groupObj.Groups.Single(g => g.Name == groupName);
+                                }
+                                return groupObj;
+                            }
+                        }
                     }
-                    if (elementsNames.Count != 0)
-                    {
-                        ElementsByTcsType.Add(groupsElementsByTypePair.Key, elements);
-                        ElementsNameByTcsType.Add(groupsElementsByTypePair.Key, elementsNames);
-                    }
-                }
+                    return typePolynomPathObjects;
+                }).Invoke();
             }
+            public static Dictionary<string, ArrayList> TypePolynomPathObjects { get; set; }
+            public static Lazy<Dictionary<string, List<IElement>>> ElementsByTcsType { get; set; } = new Lazy<Dictionary<string, List<IElement>>>(new Func<Dictionary<string, List<IElement>>>(() => 
+            {
+                Console.WriteLine("Получаем элементы из Полином. Подождите..");
+
+                Dictionary<string, List<IElement>> elementsByTcsType = new Dictionary<string, List<IElement>>();
+                foreach (var type in ElementsSettings.Types)
+                {
+                    ArrayList pathObjects = TypePolynomPathObjects[type];
+
+                    List<IElement> typeElements = new List<IElement>();
+                    foreach (var pathObject in pathObjects)
+                    {
+                        if(pathObject is IGroup)
+                        {
+                            List<IElement> findedElements = new List<IElement>();
+                            IGroup group = (IGroup)pathObject;
+                            TrySearchAllElementsInGroup(group, out findedElements);
+                            typeElements.AddRange(findedElements);
+                        }
+                        if (pathObject is ICatalog)
+                        {
+                            List<IElement> findedElements = new List<IElement>();
+                            ICatalog catalog = (ICatalog)pathObject;
+                            TrySearchElementsInCatalog(catalog, out findedElements);
+                            typeElements.AddRange(findedElements);
+                        }
+                    }
+                    Console.WriteLine($"- получили {type}.\n");
+                    elementsByTcsType.Add(type, typeElements);
+                }
+                Console.WriteLine("Получили все элементы из Полином.\n");
+                return elementsByTcsType;
+            })); // Могут быть дубли элментов. Фильтрануть
+
+            /* public static Dictionary<string, List<IGroup>> GroupsByTcsType { get; set; } = new Func<Dictionary<string, List<IGroup>>>(() =>
+             {
+                 Dictionary<string, List<IGroup>> groupsByType = new Dictionary<string, List<IGroup>>();
+                 foreach (var tcsByPolynomGroupsPair in ElementsFile.TypePolynomPaths)
+                 {
+                     List<IGroup> groups = new List<IGroup>();
+                     foreach (string polynomTypeName in tcsByPolynomGroupsPair.Value)
+                     {
+                         IGroup group;
+                         if (!TrySearchGroupInAllReferences(polynomTypeName, out group))
+                             throw new Exception($"Группа(Папка/каталог) \"{polynomTypeName}\" не найдена в Полниноме. Проверьте правильность имени группы/подгруппы Полином.");
+                         groups.Add(group);
+
+                     }
+                     groupsByType.Add(tcsByPolynomGroupsPair.Key, groups);
+                 }
+                 return groupsByType;
+             }).Invoke();*/
         }
         public class PropertyesActualisation
         {
@@ -114,58 +195,32 @@ namespace TCS_Polynom_data_actualiser
             public static List<IPropertyDefinition> Properties { get; set; }
             public static List<string> PropertiesNames { get; set; }
         }
-        public static bool TrySearchGroupsInGroup(string _baseGroupName, string _targetGroupName, out List<IGroup> findedGroups)
+        public static string GetPolynomPath(string polynomPaths, int? index)
         {
-            IGroup baseGroup;
-            if(TrySearchGroupInAllReferences(_baseGroupName, out baseGroup))
-            {
-                var concept = Session.Objects.GetKnownConcept(KnownConceptKind.Group);
-                var propDef = Session.Objects.GetKnownPropertyDefinition(KnownPropertyDefinitionKind.Name);
-
-                var condition = Session.Objects.CreateSimpleCondition(
-                    concept,
-                    propDef,
-                    (int)StringCompareOperation.Equal,
-                    ((IStringPropertyDefinition)propDef).CreateStringPropertyValueData(_targetGroupName),
-                    null,
-                    (int)StringCompareOptions.None);
-                var resultScope = baseGroup.Intersect(condition);
-                List<IGroup> groups = resultScope.GetEnumerable<IGroup>().ToList();
-                if (groups.Count > 0)
-                {
-                    findedGroups = groups;
-                    return true;
-                }
-                findedGroups = null;
-                return false;
-            }
-            findedGroups = null;
-            Console.WriteLine($"Базовая группа \"{_baseGroupName}\" не найдена при попытке найти группу в группе");
-            return false;
+            var separatedPaths1 = Regex.Replace(polynomPaths, @"\d", ";");
+            var separatedPaths2 = separatedPaths1.Replace(" - ", "");
+            List<string> splitedPaths = separatedPaths2.Split(';').ToList();
+            splitedPaths.RemoveAt(0);
+            return splitedPaths[index.Value];
         }
-        public static bool TrySearchGroupInAllReferences(string groupName, out IGroup findedGroup)
+        public static bool TrySearchGroupsInGroup(IGroup baseGroupName, string targetGroupName, out List<IGroup> findedGroups)
         {
-            foreach (var reference in Session.Objects.AllReferences)
-            {
-                var concept = Session.Objects.GetKnownConcept(KnownConceptKind.Group);
-                var propDef = Session.Objects.GetKnownPropertyDefinition(KnownPropertyDefinitionKind.Name);
+            var concept = Session.Objects.GetKnownConcept(KnownConceptKind.Group);
+            var propDef = Session.Objects.GetKnownPropertyDefinition(KnownPropertyDefinitionKind.Name);
 
-                var condition = Session.Objects.CreateSimpleCondition(
-                    concept,
-                    propDef,
-                    (int)StringCompareOperation.Equal,
-                    ((IStringPropertyDefinition)propDef).CreateStringPropertyValueData(groupName),
-                    null,
-                    (int)StringCompareOptions.None);
-                var resultScope = reference.Intersect(condition);
-                IGroup group = resultScope.GetEnumerable<IGroup>().FirstOrDefault();
-                if (group != null)
-                {
-                    findedGroup = group;
-                    return true;
-                }
-            };
-            findedGroup = null;
+            var condition = Session.Objects.CreateSimpleCondition(
+                concept,
+                propDef,
+                (int)StringCompareOperation.Equal,
+                ((IStringPropertyDefinition)propDef).CreateStringPropertyValueData(targetGroupName),
+                null,
+                (int)StringCompareOptions.None);
+            var resultScope = baseGroupName.Intersect(condition);
+            List<IGroup> groups = resultScope.GetEnumerable<IGroup>().ToList();
+
+            findedGroups = groups;
+            if (groups.Count > 0)
+                return true;
             return false;
         }
         public static bool TrySearchGroupsInAllReferences(string groupName, out List<IGroup> findedGroup)
@@ -223,7 +278,7 @@ namespace TCS_Polynom_data_actualiser
             findedElement = null;
             return false;
         }
-        public static bool TrySearchElementsInGroup(string elementName, IGroup groupElement, out List<IElement> findedElements)
+        public static bool TrySearchElementsInGroup(IGroup groupElement, string elementName, out List<IElement> findedElements)
         {
             var concept = Session.Objects.GetKnownConcept(KnownConceptKind.Element);
             var propDef = Session.Objects.GetKnownPropertyDefinition(KnownPropertyDefinitionKind.Name);
@@ -237,12 +292,10 @@ namespace TCS_Polynom_data_actualiser
                 (int)StringCompareOptions.None);
             var resultScope = groupElement.Intersect(condition);
             List<IElement> elements = resultScope.GetEnumerable<IElement>().ToList();
-            if (elements.Count > 0 || elements == null)
-            {
-                findedElements = elements;
+
+            findedElements = elements;
+            if (elements.Count > 0)
                 return true;
-            }
-            findedElements = null;
             return false;
         }
         public static bool TrySearchAllElementsInGroup(IGroup groupElement, out List<IElement> findedElements)
@@ -266,7 +319,7 @@ namespace TCS_Polynom_data_actualiser
             timer.Stop();
 
             findedElements = elements;
-            if (elements.Count() == 0 || elements == null)
+            if (elements.Count == 0)
                 return false;
             return true;
         }
@@ -297,28 +350,70 @@ namespace TCS_Polynom_data_actualiser
                 return false;
             return true;
         }
-/*        public static bool TrySearchPropertiesInAllReferences()
+        public static bool TrySearchElementsInCatalog(ICatalog catalogObj, out List<IElement> findedElements)
         {
-            
-
-            var concept = Session.Objects.GetKnownConcept(KnownConceptKind.);
-
-            var propDefCatalog = (IPropertyOwnerScope)Session.Objects.PropDefCatalog.PropDefGroups.First().PropertyDefinitions.First().;
-
-
+            var concept = Session.Objects.GetKnownConcept(KnownConceptKind.Element);
+            var propDef = Session.Objects.GetKnownPropertyDefinition(KnownPropertyDefinitionKind.Description);
 
             var condition = Session.Objects.CreateSimpleCondition(
                 concept,
-                null,
-                (int)StringCompareOperation.None,
+                propDef,
+                (int)StringCompareOperation.NullValue,// Тут можно просто None
                 null,
                 null,
                 (int)StringCompareOptions.None);
+            var resultScope = catalogObj.Intersect(condition);
+            List<IElement> elements = resultScope.GetEnumerable<IElement>().ToList();
+            if (elements.Count > 0)
+            {
+                findedElements = elements;
+                return true;
+            }
+            findedElements = new List<IElement>();
+            return false;
+        }
+        public static bool TrySearchGroupsInCatalog(ICatalog catalogObj, string targetGroupName, out List<IGroup> findedGroups)
+        {
+            var concept = Session.Objects.GetKnownConcept(KnownConceptKind.Group);
+            var propDef = Session.Objects.GetKnownPropertyDefinition(KnownPropertyDefinitionKind.Name);
 
-            condition.In
-            var resultScope = propDefCatalog.Intersect(condition);
+            var condition = Session.Objects.CreateSimpleCondition(
+                concept,
+                propDef,
+                (int)StringCompareOperation.Equal,
+                ((IStringPropertyDefinition)propDef).CreateStringPropertyValueData(targetGroupName),
+                null,
+                (int)StringCompareOptions.None);
+            var resultScope = catalogObj.Intersect(condition);
+            List<IGroup> groups = resultScope.GetEnumerable<IGroup>().ToList();
 
-            return true;
-        }*/
+            findedGroups = groups;
+            if (groups.Count > 0)
+                return true;
+            return false;
+        }
+        /*        public static bool TrySearchPropertiesInAllReferences()
+                {
+            
+
+                    var concept = Session.Objects.GetKnownConcept(KnownConceptKind.);
+
+                    var propDefCatalog = (IPropertyOwnerScope)Session.Objects.PropDefCatalog.PropDefGroups.First().PropertyDefinitions.First().;
+
+
+
+                    var condition = Session.Objects.CreateSimpleCondition(
+                        concept,
+                        null,
+                        (int)StringCompareOperation.None,
+                        null,
+                        null,
+                        (int)StringCompareOptions.None);
+
+                    condition.In
+                    var resultScope = propDefCatalog.Intersect(condition);
+
+                    return true;
+                }*/
     }
 }

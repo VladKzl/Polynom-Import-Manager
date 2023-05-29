@@ -3,23 +3,24 @@ using Ascon.Vertical.Application.Configuration;
 using ClosedXML.Excel;
 using DocumentFormat.OpenXml.Spreadsheet;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static TCS_Polynom_data_actualiser.AppBase;
+using static Polynom_Import_Manager.AppBase;
 
-namespace TCS_Polynom_data_actualiser
+namespace Polynom_Import_Manager
 {
     public class GroupsActualisation
     {
         static GroupsActualisation()
         {
-            DistinctedTCSGroupsNamesByType = new Func<Dictionary<string, List<string>>>(() =>
+            /*DistinctedTCSGroupsNamesByType = new Func<Dictionary<string, List<string>>>(() =>
             {
                 Dictionary<string, List<string>> distinctedGroupsByType = new Dictionary<string, List<string>>();
-                foreach (var type in ElementsFileSettings.Types)
+                foreach (var type in ElementsFile.Types)
                 {
                     var workSheet = ElementsActualisationWorkBook.Value.Worksheet(type);
                     List<string> groupsNames = workSheet.Range(workSheet.Cell(3, "C"), workSheet.Column("C").LastCellUsed()).CellsUsed(true).Select(cell => (string)cell.Value).ToList();
@@ -32,32 +33,108 @@ namespace TCS_Polynom_data_actualiser
                     distinctedGroupsByType.Add(type, distinctedGroupsNames);
                 }
                 return distinctedGroupsByType;
-            }).Invoke();
+            }).Invoke();*/
         }
-        private static XLWorkbook NewGroupsActualisationWorkBook { get; set; } = new XLWorkbook();
-        public static Dictionary<string, List<string>> DistinctedTCSGroupsNamesByType { get; set; }
+        /*public static Dictionary<string, List<string>> DistinctedTCSGroupsNamesByType { get; set; }*/
         public static void CreateAndFillGroupsDocument()
         {
-            if (File.Exists(GroupsFileSettings.FilePath))
-                File.Move(GroupsFileSettings.FilePath, GroupsFileSettings.ArchivePath);
-            CreateDocAndSheets();
-            ActualiseGroups();
-            using (NewGroupsActualisationWorkBook)
-            {
-                NewGroupsActualisationWorkBook.SaveAs(GroupsFileSettings.FilePath);
-            }
+            ElementsFile.ReconnectWorkBook(false);
+            FillSheets();
+            ElementsFile.WorkBook.Save();
 
-            void CreateDocAndSheets()
+
+            void FillSheets()
             {
-                foreach (string type in ElementsFileSettings.Types)
+                foreach(var type in ElementsSettings.Types)
                 {
-                    var sheet = NewGroupsActualisationWorkBook.AddWorksheet(type);
-                    sheet.Cell(1, "A").Value = "TCS";
-                    sheet.Cell(1, "B").Value = "Polynom";
-                    sheet.Cell(1, "C").Value = "Выбор группы Polynom";
+                    var sheet = ElementsFile.WorkBook.Worksheet(type);
+                    ArrayList typePolynomPathObjects = PolynomBase.Elements.TypePolynomPathObjects[type];
+
+                    List<IXLRow> rows = sheet.Column("C").CellsUsed().Select(x => x.WorksheetRow()).ToList();
+                    rows.RemoveRange(0,1);
+                    for(int i = 0; i < rows.Count; i++)
+                    {
+                        string targetGroupName = CommonCode.GetLastGroupFromPath(rows[i].Cell("C").Value.ToString());
+
+                        List<IGroup> allFindedGroups = new List<IGroup>();
+                        FindeSimilarGroups();
+                        if(allFindedGroups.Count > 0)
+                            rows[i].Cell("D").Value = CreateAllPaths();
+
+                        Console.Write($"\rОбработали групп {i}/{rows.Count}");
+
+
+                        string CreateAllPaths()
+                        {
+                            StringBuilder allPathsBuilder = new StringBuilder();
+                            /*                            //Добавляем базовые группы
+                            List<string> polynomPaths = ElementsSettings.TypePolynomPaths[type];
+                            for (int _i = 0; _i < polynomPaths.Count; _i++)
+                            {
+                                allPathsBuilder.AppendLine($"{_i} - {polynomPaths[_i]}/Нераспределенные");
+                            }*/
+                            // Добавляем похожие группы
+                            for (int g = 0; g < allFindedGroups.Count; g++)
+                            {
+                                string path = CreatePath(allFindedGroups[g], g);
+
+                                if (g < allFindedGroups.Count - 1)
+                                    allPathsBuilder.AppendLine($"{g} - {path}");
+                                if (g == allFindedGroups.Count - 1)
+                                    allPathsBuilder.Append($"{g} - {path}");
+                            }
+                            return allPathsBuilder.ToString();
+
+                            string CreatePath(IGroup group, int g)
+                            {
+                                StringBuilder pathBuilder = new StringBuilder();
+
+                                foreach (var pathPart in group.GetPath().ToList())
+                                {
+                                    if (pathPart is IReference)
+                                    {
+                                        var referencePart = (IReference)pathPart;
+                                        pathBuilder.Append(referencePart.Name + "/");
+                                    }
+                                    if (pathPart is ICatalog)
+                                    {
+                                        var catalogPart = (ICatalog)pathPart;
+                                        pathBuilder.Append(catalogPart.Name + "/");
+                                    }
+                                    if(pathPart is IGroup)
+                                    {
+                                        var groupPart = (IGroup)pathPart;
+                                        pathBuilder.Append(groupPart.Name + "/");
+                                    }
+                                }
+                                return pathBuilder.ToString().TrimEnd('/');
+                            }
+                        }
+                        void FindeSimilarGroups()
+                        {
+                            foreach (var pathObject in typePolynomPathObjects)
+                            {
+                                List<IGroup> findedGroups = new List<IGroup>();
+                                if (pathObject is IGroup)
+                                {
+                                    IGroup group = (IGroup)pathObject;
+                                    PolynomBase.TrySearchGroupsInGroup(group, targetGroupName, out findedGroups);
+                                    allFindedGroups.AddRange(findedGroups);
+                                }
+                                if (pathObject is ICatalog)
+                                {
+                                    ICatalog catalog = (ICatalog)pathObject;
+                                    PolynomBase.TrySearchGroupsInCatalog(catalog, targetGroupName, out findedGroups);
+                                    allFindedGroups.AddRange(findedGroups);
+                                }
+                            }
+                        }
+                    }
+                    Console.Write("\n");
                 }
+                
             }
-            void ActualiseGroups()
+            /*void FillSheets1()
             {
                 foreach (var groupsPair in DistinctedTCSGroupsNamesByType)
                 {
@@ -68,7 +145,7 @@ namespace TCS_Polynom_data_actualiser
                         int cellRowNum = i + 2;
                         workSheet.Cell(cellRowNum, "A").Value = group;
                         List<IGroup> findedAllGroups = new List<IGroup>();
-                        foreach (string polynomType in ElementsFileSettings.TcsByPolynomTypes[groupsPair.Key])
+                        foreach (string polynomType in ElementsFile.TypePolynomPaths[groupsPair.Key])
                         {
                             List<IGroup> findedGroups = null;
                             if (PolynomBase.TrySearchGroupsInGroup(polynomType, group, out findedGroups))
@@ -114,7 +191,7 @@ namespace TCS_Polynom_data_actualiser
                     }
                     return pathsBouilder.ToString();
                 }
-            }
+            }*/
         }
     }
 }

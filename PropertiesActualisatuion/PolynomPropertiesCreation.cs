@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static TCS_Polynom_data_actualiser.AppBase;
+using static Polynom_Import_Manager.AppBase;
 
-namespace TCS_Polynom_data_actualiser
+namespace Polynom_Import_Manager
 {
     public class PolynomPropertiesCreation
     {
@@ -22,15 +22,15 @@ namespace TCS_Polynom_data_actualiser
                 rootGroup = PolynomBase.Session.Objects.PropDefCatalog.CreatePropDefGroup("Новые свойства");
             }
 
-            var propRows = PropertiesSettings.PropertyesSheet.Column("B").CellsUsed().Select(x => x.WorksheetRow()).ToList();
+            var propRows = PropertiesFile.PropertiesSheet.Column("B").CellsUsed().Select(x => x.WorksheetRow()).ToList();
             propRows.RemoveRange(0, 2);
 
             for(int i = 0; i < propRows.Count; i++)
             {
                 string propName = propRows[i].Cell("B").Value.ToString(); //имя
                 string propPath = propRows[i].Cell("C").Value.ToString(); //путь
-                string propGroupName = TCSBase.Propertyes.GetPropGroupFromPath(propPath);
-                List<string> propSplitPath = TCSBase.Propertyes.GetSplitPath(propPath);
+                string propGroupName = CommonCode.GetLastGroupFromPath(propPath);
+                List<string> propSplitPath = CommonCode.GetSplitPath(propPath);
                 string polynomGroups = propRows[i].Cell("D").Value.ToString(); //полином пути
                 int? polynomGroupIndex = null; //индекс пути
                 if (propRows[i].Cell("E").Value.ToString() != string.Empty)
