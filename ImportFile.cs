@@ -13,7 +13,7 @@ namespace Polynom_Import_Manager
 {
     public class ImportFile
     {
-        public enum Sheets
+        private enum Sheets
         {
             ELEMENTS,
             PROPERTIES,
@@ -179,7 +179,7 @@ namespace Polynom_Import_Manager
             }
             _ImportFile.WorkBook.Save();
         }
-        public static void CreateDoc(Sheets targetSheet)
+        private static void CreateDoc(Sheets targetSheet)
         {
             if (File.Exists(_ImportFile.FilePath))
             {
