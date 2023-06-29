@@ -38,3 +38,9 @@ D:\ascon_obmen\kozlov_vi\Полином\Приложения\TCS_Polynom_data_ac
 D:\ascon_obmen\kozlov_vi\Полином\Приложения\TCS_Polynom_data_actualiser\bin\Debug\ClosedXML.xml
 D:\ascon_obmen\kozlov_vi\Полином\Приложения\TCS_Polynom_data_actualiser\bin\Debug\DocumentFormat.OpenXml.xml
 D:\ascon_obmen\kozlov_vi\Полином\Приложения\TCS_Polynom_data_actualiser\bin\Debug\ExcelNumberFormat.xml
+D:\ascon_obmen\kozlov_vi\Полином\Приложения\Polynom Import Manager\obj\Debug\TCS_Polynom_data_actualiser.csproj.AssemblyReference.cache
+D:\ascon_obmen\kozlov_vi\Полином\Приложения\Polynom Import Manager\obj\Debug\TCS_Polynom_data_actualiser.csproj.SuggestedBindingRedirects.cache
+D:\ascon_obmen\kozlov_vi\Полином\Приложения\Polynom Import Manager\obj\Debug\TCS_Polynom_data_actualiser.exe.config
+D:\ascon_obmen\kozlov_vi\Полином\Приложения\Polynom Import Manager\obj\Debug\TCS_Polynom_data_actualiser.csproj.CoreCompileInputs.cache
+D:\ascon_obmen\kozlov_vi\Полином\Приложения\Polynom Import Manager\obj\Debug\TCS_Polynom_data_actualiser.exe
+D:\ascon_obmen\kozlov_vi\Полином\Приложения\Polynom Import Manager\obj\Debug\TCS_Polynom_data_actualiser.pdb
